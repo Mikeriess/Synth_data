@@ -2,3 +2,5 @@ anonymization_pipeline/
 paper/
 data/
 *.pyc
+outputs/
+unsloth_compiled_cache/
