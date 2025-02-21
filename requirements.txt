@@ -1,0 +1,18 @@
+# API and server dependencies
+vllm>=0.2.7
+requests>=2.31.0
+
+# Data processing and ML
+transformers>=4.37.2
+datasets>=2.16.1
+pandas>=2.2.0
+numpy>=1.26.3
+tqdm>=4.66.1
+
+# Jupyter environment
+jupyter>=1.0.0
+ipykernel>=6.29.0
+ipywidgets>=8.1.1
+
+# Optional but recommended
+torch>=2.1.2  # Required by vLLM
