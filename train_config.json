@@ -7,7 +7,7 @@
         "output_dir": "outputs",
         "num_train_epochs": 3,
         "per_device_train_batch_size": 4,
-        "gradient_accumulation_steps": 1,
+        "gradient_accumulation_steps": 8,
         "learning_rate": 2e-4,
         "warmup_steps": 100,
         "logging_steps": 5,
@@ -19,9 +19,9 @@
         "remove_unused_columns": false
     },
     "deepspeed": {
-        "train_micro_batch_size_per_gpu": 4,
-        "gradient_accumulation_steps": 8,
-        "train_batch_size": 256,
+        "train_micro_batch_size_per_gpu": "auto",
+        "gradient_accumulation_steps": "auto",
+        "train_batch_size": "auto",
         "zero_optimization": {
             "stage": 2,
             "offload_optimizer": {
