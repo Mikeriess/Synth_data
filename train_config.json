@@ -38,19 +38,23 @@
         "wall_clock_breakdown": true,
         "zero_force_ds_cpu_optimizer": false
     },
-    "wandb": {
-        "project": "gemma-finetuning",
-        "name": "deepspeed-training-multi-gpu",
-        "config": {
-            "model_name": "google/gemma-2-2b-it",
-            "epochs": 3,
-            "learning_rate": 2e-4,
-            "batch_size": 256,
-            "gpu_count": 8
+    "monitoring": {
+        "use_wandb": false,
+        "use_codecarbon": false,
+        "wandb": {
+            "project": "gemma-finetuning",
+            "name": "deepspeed-training-multi-gpu",
+            "config": {
+                "model_name": "google/gemma-2-2b-it",
+                "epochs": 3,
+                "learning_rate": 2e-4,
+                "batch_size": 256,
+                "gpu_count": 8
+            }
+        },
+        "emissions": {
+            "output_dir": "emissions",
+            "log_level": "warning"
         }
-    },
-    "emissions": {
-        "output_dir": "emissions",
-        "log_level": "warning"
     }
 } 

@@ -84,23 +84,27 @@ def main():
         os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
         check_cuda()
         
-        # Create emissions directory
-        os.makedirs(config['emissions']['output_dir'], exist_ok=True)
+        # Initialize monitoring tools based on config flags
+        wandb_run = None
+        tracker = None
         
-        # Initialize wandb
-        wandb.init(
-            project=config['wandb']['project'],
-            name=config['wandb']['name'],
-            config=config['wandb']['config']
-        )
+        if config['monitoring']['use_wandb']:
+            # Initialize wandb
+            wandb_run = wandb.init(
+                project=config['monitoring']['wandb']['project'],
+                name=config['monitoring']['wandb']['name'],
+                config=config['monitoring']['wandb']['config']
+            )
         
-        # Initialize emissions tracker
-        tracker = EmissionsTracker(
-            project_name=config['wandb']['project'],
-            output_dir=config['emissions']['output_dir'],
-            log_level=config['emissions']['log_level']
-        )
-        tracker.start()
+        if config['monitoring']['use_codecarbon']:
+            # Create emissions directory and initialize tracker
+            os.makedirs(config['monitoring']['emissions']['output_dir'], exist_ok=True)
+            tracker = EmissionsTracker(
+                project_name=config['monitoring']['wandb']['project'],
+                output_dir=config['monitoring']['emissions']['output_dir'],
+                log_level=config['monitoring']['emissions']['log_level']
+            )
+            tracker.start()
         
         # Load and prepare dataset
         chatml_data = prepare_dialogue_dataset()
@@ -124,7 +128,8 @@ def main():
         training_args = TrainingArguments(
             **config['training'],
             deepspeed=ds_config,
-            report_to="wandb"
+            # Only enable wandb reporting if it's enabled in config
+            report_to="wandb" if config['monitoring']['use_wandb'] else "none"
         )
 
         # Print batch size info
@@ -164,8 +169,18 @@ def main():
             ),
         )
         
-        # Training loop
-        trainer.train()
+        try:
+            trainer.train()
+        finally:
+            # Cleanup monitoring tools
+            if tracker is not None:
+                emissions = tracker.stop()
+                print(f"Total emissions: {emissions} kg CO2eq")
+                if wandb_run is not None:
+                    wandb.log({"total_emissions_kg": emissions})
+            
+            if wandb_run is not None:
+                wandb_run.finish()
         
     except Exception as e:
         print(f"Training failed with error: {str(e)}")
@@ -174,14 +189,6 @@ def main():
         raise
         
     finally:
-        # Cleanup
-        if 'tracker' in locals():
-            emissions = tracker.stop()
-            print(f"Total emissions: {emissions} kg CO2eq")
-            if wandb.run is not None:
-                wandb.log({"total_emissions_kg": emissions})
-                wandb.finish()
-        
         # Cleanup distributed
         if torch.distributed.is_initialized():
             torch.distributed.destroy_process_group()
