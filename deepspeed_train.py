@@ -43,7 +43,7 @@ def get_deepspeed_config(config):
     return config['deepspeed']
 
 def prepare_chitchat_dataset():
-    """Load and prepare ChitChat dataset for training."""
+    """Load and prepare OpenThoughts dataset for training."""
     # Load from GitHub
     dataset = load_dataset("open-thoughts/OpenThoughts-114k")
     
@@ -56,14 +56,17 @@ def prepare_chitchat_dataset():
             "content": "You are a helpful AI assistant engaging in natural conversation."
         })
         
-        # Convert messages to ChatML format
-        for msg in example['messages']:
-            # Each message in ChitChat has 'text' and 'sender'
-            role = "assistant" if msg['sender'].startswith("bot") else "user"
-            messages.append({
-                "role": role,
-                "content": msg['text']
-            })
+        # Add user message
+        messages.append({
+            "role": "user",
+            "content": example['prompt']
+        })
+        
+        # Add assistant response
+        messages.append({
+            "role": "assistant",
+            "content": example['response']
+        })
         
         return {"messages": messages}
     
