@@ -6,3 +6,7 @@ outputs/
 unsloth_compiled_cache/
 emissions/
 wandb/
+archive/
+last_run_prepared/
+examples/
+deepspeed_configs/
