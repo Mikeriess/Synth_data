@@ -20,7 +20,7 @@
     },
     "deepspeed": {
         "train_micro_batch_size_per_gpu": 4,
-        "gradient_accumulation_steps": 1,
+        "gradient_accumulation_steps": 8,
         "train_batch_size": 256,
         "zero_optimization": {
             "stage": 2,
