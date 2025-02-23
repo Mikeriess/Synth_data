@@ -7,7 +7,7 @@
         "output_dir": "outputs",
         "num_train_epochs": 3,
         "per_device_train_batch_size": 4,
-        "gradient_accumulation_steps": 8,
+        "gradient_accumulation_steps": 1,
         "learning_rate": 2e-4,
         "warmup_steps": 100,
         "logging_steps": 5,
@@ -20,8 +20,8 @@
     },
     "deepspeed": {
         "train_micro_batch_size_per_gpu": 4,
-        "gradient_accumulation_steps": 8,
-        "train_batch_size": 32,
+        "gradient_accumulation_steps": 1,
+        "train_batch_size": 256,
         "zero_optimization": {
             "stage": 2,
             "offload_optimizer": {
@@ -40,13 +40,13 @@
     },
     "wandb": {
         "project": "gemma-finetuning",
-        "name": "deepspeed-training-single-gpu",
+        "name": "deepspeed-training-multi-gpu",
         "config": {
             "model_name": "google/gemma-2-2b-it",
             "epochs": 3,
             "learning_rate": 2e-4,
-            "batch_size": 32,
-            "gpu_count": 1
+            "batch_size": 256,
+            "gpu_count": 8
         }
     },
     "emissions": {
