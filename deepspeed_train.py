@@ -53,19 +53,19 @@ def prepare_chitchat_dataset():
         # Add system message
         messages.append({
             "role": "system",
-            "content": "You are a helpful AI assistant engaging in natural conversation."
+            "content": "You are a helpful AI assistant that provides detailed step-by-step reasoning to solve problems."
         })
         
-        # Add user message
+        # Add user message with the problem/prompt
         messages.append({
             "role": "user",
-            "content": example['prompt']
+            "content": example['system'] + "\n\n" + example['conversations'][0]['value']
         })
         
-        # Add assistant response
+        # Add assistant response with reasoning and solution
         messages.append({
             "role": "assistant",
-            "content": example['response']
+            "content": example['conversations'][1]['value']
         })
         
         return {"messages": messages}
