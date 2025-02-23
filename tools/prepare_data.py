@@ -100,6 +100,38 @@ def print_sample_conversation(chatml_data: Dict[str, Dict], sample_idx: int = 1)
     for msg in chatml_data[sample_id]['messages']:
         print(f"{msg['role']}: {msg['content']}\n")
 
+def prepare_sft_dataset(chatml_data):
+    """
+    Convert ChatML format data to a format suitable for SFTTrainer.
+    
+    Args:
+        chatml_data: Dictionary of conversations in ChatML format
+        
+    Returns:
+        Dataset: HuggingFace Dataset ready for SFTTrainer
+    """
+    # Convert conversations to list format
+    formatted_data = []
+    
+    for conv_id, conv_data in chatml_data.items():
+        # Combine messages into a single conversation string
+        messages = conv_data['messages']
+        
+        # Format each conversation as a dictionary with the required fields
+        formatted_data.append({
+            "messages": messages,  # SFTTrainer can handle the ChatML format directly
+            "conversation_id": conv_id,
+            "language": conv_data['language']
+        })
+    
+    # Convert to pandas DataFrame first
+    df = pd.DataFrame(formatted_data)
+    
+    # Convert to HuggingFace Dataset
+    dataset = Dataset.from_pandas(df)
+    
+    return dataset
+
 if __name__ == "__main__":
     # Example usage
     chatml_data = prepare_dialogue_dataset()

@@ -4,3 +4,5 @@ data/
 *.pyc
 outputs/
 unsloth_compiled_cache/
+emissions/
+wandb/

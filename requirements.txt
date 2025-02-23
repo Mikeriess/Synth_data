@@ -16,3 +16,13 @@ ipywidgets>=8.1.1
 
 # Optional but recommended
 torch>=2.1.2  # Required by vLLM
+
+# DeepSpeed and related dependencies
+deepspeed>=0.16.0
+torch>=2.0.0
+transformers>=4.38.0
+accelerate>=0.27.0
+
+# Monitoring and logging
+wandb>=0.15.0
+codecarbon>=2.3.0
