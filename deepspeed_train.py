@@ -5,7 +5,7 @@ import torch
 import transformers
 import wandb
 from transformers import AutoModelForCausalLM, AutoTokenizer, Trainer, TrainingArguments
-from tools.prepare_data import prepare_dialogue_dataset, prepare_sft_dataset
+from datasets import load_dataset
 from codecarbon import EmissionsTracker
 
 """
@@ -41,6 +41,37 @@ def get_deepspeed_config(config):
     print(f"Training configuration:")
     print(f"- Number of GPUs: {world_size}")
     return config['deepspeed']
+
+def prepare_chitchat_dataset():
+    """Load and prepare ChitChat dataset for training."""
+    # Load from GitHub
+    dataset = load_dataset("BYU-PCCL/chitchat-dataset")
+    
+    def convert_to_chatml(example):
+        messages = []
+        
+        # Add system message
+        messages.append({
+            "role": "system",
+            "content": "You are a helpful AI assistant engaging in natural conversation."
+        })
+        
+        # Convert messages to ChatML format
+        for msg in example['messages']:
+            # Each message in ChitChat has 'text' and 'sender'
+            role = "assistant" if msg['sender'].startswith("bot") else "user"
+            messages.append({
+                "role": role,
+                "content": msg['text']
+            })
+        
+        return {"messages": messages}
+    
+    # Convert to ChatML format
+    formatted_dataset = dataset['train'].map(convert_to_chatml)
+    
+    print(f"Prepared {len(formatted_dataset)} conversations for training")
+    return formatted_dataset
 
 def prepare_training_data(dataset, tokenizer, max_length):
     """Convert dataset to format expected by model."""
@@ -107,8 +138,7 @@ def main():
             tracker.start()
         
         # Load and prepare dataset
-        chatml_data = prepare_dialogue_dataset()
-        raw_dataset = prepare_sft_dataset(chatml_data)
+        raw_dataset = prepare_chitchat_dataset()
         
         # Initialize tokenizer and model
         tokenizer = AutoTokenizer.from_pretrained(config['model']['name'])
