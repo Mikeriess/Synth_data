@@ -349,7 +349,7 @@ def generate_dialogue_from_prompt(
     generation_config: Dict[str, Any],
     vllm_url: str = "http://0.0.0.0:8000/v1/chat/completions",
     headers: Dict[str, str] = {"Content-Type": "application/json"},
-    timeout: int = 30,  # Increased timeout
+    timeout: int = 120,  # Increased timeout
     max_retries: int = 3  # Add retries
 ) -> Optional[str]:
     """
