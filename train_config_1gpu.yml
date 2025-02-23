@@ -25,7 +25,7 @@ lora_model_dir:
 
 sequence_len: 2048
 sample_packing: true
-eval_sample_packing: true
+eval_sample_packing: false #false as the dataset is very small and cannot be packed
 pad_to_sequence_len: true
 
 lora_r: 16
