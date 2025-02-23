@@ -45,7 +45,7 @@ def get_deepspeed_config(config):
 def prepare_chitchat_dataset():
     """Load and prepare ChitChat dataset for training."""
     # Load from GitHub
-    dataset = load_dataset("BYU-PCCL/chitchat-dataset")
+    dataset = load_dataset("open-thoughts/OpenThoughts-114k")
     
     def convert_to_chatml(example):
         messages = []
