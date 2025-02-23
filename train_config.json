@@ -19,8 +19,8 @@
         "remove_unused_columns": false
     },
     "deepspeed": {
-        "train_micro_batch_size_per_gpu": "auto",
-        "gradient_accumulation_steps": "auto",
+        "train_micro_batch_size_per_gpu": 4,
+        "gradient_accumulation_steps": 8,
         "train_batch_size": "auto",
         "zero_optimization": {
             "stage": 2,
