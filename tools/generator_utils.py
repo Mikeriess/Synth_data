@@ -375,28 +375,8 @@ def generate_dialogue_from_prompt(prompt: str, generation_config: dict) -> str:
         print(f"Error in dialogue generation: {str(e)}")
         return None
 
-def parse_generated_dialogue_to_messages(
-    generated_dialogue: str,
-    base_poster_ids: Dict[str, int] = {"Person 1": 1, "Person 2": 2}
-) -> List[Dict[str, Any]]:
-    """
-    Parse generated dialogue text into structured message format matching original data.
-    
-    Args:
-        generated_dialogue: String containing the generated dialogue
-        base_poster_ids: Mapping of Person labels to poster IDs
-        
-    Returns:
-        List of message dictionaries with structure:
-        [
-            {
-                'post_number': int,
-                'poster_id': int,
-                'text': str
-            },
-            ...
-        ]
-    """
+def parse_generated_dialogue_to_messages(generated_dialogue: str, base_poster_ids: Dict[str, int] = {"Person 1": 1, "Person 2": 2}) -> List[Dict[str, Any]]:
+    """Parse generated dialogue text into structured message format."""
     messages = []
     post_number = 1
     
@@ -415,20 +395,29 @@ def parse_generated_dialogue_to_messages(
             text = text.strip()
             
             # Get poster_id from mapping
-            poster_id = base_poster_ids.get(speaker, 999)  # Use 999 for unknown speakers
+            poster_id = base_poster_ids.get(speaker)
+            
+            # Validate values before creating message
+            if poster_id is None or pd.isna(poster_id):
+                print(f"Warning: Invalid poster_id in line: {line}")
+                continue
+                
+            if not text:
+                print(f"Warning: Empty message text in line: {line}")
+                continue
             
             # Create message dictionary
             message = {
                 'post_number': post_number,
-                'poster_id': poster_id,
-                'text': text
+                'poster_id': int(poster_id),  # Ensure integer
+                'text': str(text)  # Ensure string
             }
             
             messages.append(message)
             post_number += 1
             
         except Exception as e:
-            print(f"Error parsing line '{line}': {e}")
+            print(f"Warning: Error parsing line '{line}': {e}")
             continue
     
     return messages

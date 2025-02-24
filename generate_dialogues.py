@@ -18,6 +18,7 @@ from tools.generator_utils import (
     parse_generated_dialogue_to_messages
 )
 from huggingface_hub import HfApi
+import pandas as pd
 
 """
 Usage:
@@ -73,45 +74,51 @@ def save_checkpoint(checkpoint_dir: str, generated_dataset: dict, processed_ids:
     checkpoint_path = Path(checkpoint_dir) / "checkpoint.json"
     os.makedirs(checkpoint_dir, exist_ok=True)
     
-    # Convert set to list and ensure all IDs are native Python types (not numpy)
     processed_ids_list = [int(id_) for id_ in processed_ids]
     
-    # Deep copy and convert the generated dataset to ensure JSON serialization
     json_safe_dataset = {}
     for conv_id, data in generated_dataset.items():
-        # Convert conversation ID to string if it isn't already
         conv_id_str = str(conv_id)
         
-        # Create a clean copy of the data
-        json_safe_dataset[conv_id_str] = {
-            'original_messages': [
-                {
-                    'post_number': int(msg['post_number']),
-                    'poster_id': int(msg['poster_id']),
-                    'text': str(msg['text'])
+        try:
+            # Function to safely convert to int, handling NaN
+            def safe_int(value):
+                if pd.isna(value):  # Check for NaN
+                    print(f"Warning: Found NaN value in conversation {conv_id}")
+                    return 0  # or some default value
+                return int(value)
+            
+            json_safe_dataset[conv_id_str] = {
+                'original_messages': [
+                    {
+                        'post_number': safe_int(msg.get('post_number', 0)),
+                        'poster_id': safe_int(msg.get('poster_id', 0)),
+                        'text': str(msg.get('text', ''))
+                    }
+                    for msg in data['original_messages']
+                ],
+                'generated_output': str(data['generated_output']),
+                'parsed_messages': [
+                    {
+                        'post_number': safe_int(msg.get('post_number', 0)),
+                        'poster_id': safe_int(msg.get('poster_id', 0)),
+                        'text': str(msg.get('text', ''))
+                    }
+                    for msg in data['parsed_messages']
+                ],
+                'metadata': {
+                    'model': str(data['metadata']['model'])
                 }
-                for msg in data['original_messages']
-            ],
-            'generated_output': str(data['generated_output']),
-            'parsed_messages': [
-                {
-                    'post_number': int(msg['post_number']),
-                    'poster_id': int(msg['poster_id']),
-                    'text': str(msg['text'])
-                }
-                for msg in data['parsed_messages']
-            ],
-            'metadata': {
-                'model': str(data['metadata']['model'])
             }
-        }
+        except Exception as e:
+            print(f"Warning: Error processing conversation {conv_id}: {str(e)}")
+            continue
     
     checkpoint = {
         'generated_dataset': json_safe_dataset,
         'processed_ids': processed_ids_list
     }
     
-    # Save to file
     with open(checkpoint_path, 'w', encoding='utf-8') as f:
         json.dump(checkpoint, f, ensure_ascii=False, indent=2)
 
@@ -139,6 +146,64 @@ def upload_config_files(dataset_name: str, config_path: str, prompt_path: str):
         repo_id=dataset_name,
         repo_type="dataset"
     )
+
+def create_and_upload_readme(dataset_name: str, config: dict):
+    """Create and upload README.md containing the configuration."""
+    try:
+        # Create README content (raw JSON, no markdown)
+        readme_content = json.dumps(config, indent=2)
+        
+        # Create temporary README file
+        readme_path = Path("README.md")
+        with open(readme_path, "w", encoding="utf-8") as f:
+            f.write(readme_content)
+        
+        # Upload README
+        api = HfApi()
+        api.upload_file(
+            path_or_fileobj=readme_path,
+            path_in_repo="README.md",
+            repo_id=dataset_name,
+            repo_type="dataset"
+        )
+        
+        # Clean up temporary file
+        readme_path.unlink()
+        
+    except Exception as e:
+        print(f"\nWarning: Failed to upload README: {str(e)}")
+
+def upload_intermediate_dataset(generated_dataset: dict, config: dict, current_count: int):
+    """Upload intermediate dataset to HuggingFace Hub."""
+    try:
+        # Create analysis dataset
+        model_name = config['generation_config']['model']
+        analysis_dataset = create_analysis_dataset(generated_dataset, model_name)
+        
+        # Convert to HF dataset
+        hf_dataset = create_hf_dataset(
+            analysis_dataset=analysis_dataset,
+            split_name="train",
+            add_metadata=True
+        )
+        
+        # Push to HF Hub with version tag
+        hf_dataset.push_to_hub(
+            config['dataset_config']['output_dataset_name'],
+            private=config['dataset_config']['private'],
+            token=True,
+            commit_message=f"Intermediate upload - {current_count} conversations"
+        )
+        print(f"\nIntermediate dataset ({current_count} conversations) pushed to HuggingFace Hub")
+        
+        # Upload README with configuration
+        create_and_upload_readme(
+            config['dataset_config']['output_dataset_name'],
+            config
+        )
+        
+    except Exception as e:
+        print(f"\nWarning: Failed to upload intermediate dataset: {str(e)}")
 
 def main(config_path: str):
     # Load configuration
@@ -204,8 +269,13 @@ def main(config_path: str):
                     pbar.update(1)
                     
                     if current_count % 100 == 0:
+                        # Save local checkpoint
                         save_checkpoint(config['files']['checkpoint_dir'], generated_dataset, processed_ids)
                         print(f"\nCheckpoint saved at {current_count} conversations")
+                        
+                        # Upload intermediate dataset if push_to_hub is enabled
+                        if config['dataset_config']['push_to_hub']:
+                            upload_intermediate_dataset(generated_dataset, config, current_count)
                 
             except Exception as e:
                 print(f"\nError processing conversation {conv_id}: {str(e)}")
@@ -243,7 +313,14 @@ def main(config_path: str):
             config_path,
             config['files']['prompt_file']
         )
-        print("\nConfiguration and prompt files uploaded to dataset repository")
+        
+        # Upload README with configuration
+        create_and_upload_readme(
+            config['dataset_config']['output_dataset_name'],
+            config
+        )
+        
+        print("\nConfiguration, prompt files, and README uploaded to dataset repository")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
