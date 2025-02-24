@@ -582,79 +582,27 @@ def create_analysis_dataset(
     return analysis_dataset 
 
 def create_hf_dataset(
-    analysis_dataset: List[Dict],
+    analysis_dataset: pd.DataFrame,
     split_name: str = "train",
-    add_metadata: bool = True
-) -> Union[Dataset, DatasetDict]:
-    """
-    Convert analysis dataset to HuggingFace Dataset with aligned original and synthetic messages.
-    Each row represents one conversation with all its messages.
-    """
-    # First group by conversation_id
-    conversations = {}
-    for item in analysis_dataset:
-        conv_id = item['conversation_id']
-        if conv_id not in conversations:
-            conversations[conv_id] = {
-                'model': item['model'],
-                'conversation_id': conv_id,
-                'orig_messages': [],
-                'synthetic_messages': []
-            }
-        
-        # Add messages to their respective lists with renamed fields
-        # Original messages - ordered dictionary without turn
-        conversations[conv_id]['orig_messages'].append(dict([
-            ('order', item['original_message']['post_number']),
-            ('user', item['original_message']['poster_id']),
-            ('text', item['original_message']['text'])
-        ]))
-        
-        # Synthetic messages - ordered dictionary with turn
-        # Calculate turn number (1-based pairs)
-        turn_number = ((item['generated_message']['post_number'] - 1) // 2) + 1
-        
-        # Create ordered dictionary with text as last key
-        conversations[conv_id]['synthetic_messages'].append(dict([
-            ('order', item['generated_message']['post_number']),
-            ('user', item['generated_message']['poster_id']),
-            ('turn', turn_number),
-            ('text', item['generated_message']['text'])
-        ]))
+    add_metadata: bool = True,
+    dataset_metadata: dict = None
+) -> Dataset:
+    """Create a HuggingFace dataset from the analysis dataset."""
     
-    # Convert to list of dictionaries
-    formatted_data = list(conversations.values())
+    # Create the dataset
+    hf_dataset = Dataset.from_pandas(analysis_dataset)
     
-    # Create DataFrame
-    df = pd.DataFrame(formatted_data)
+    # Create dataset dictionary with splits
+    dataset_dict = DatasetDict({split_name: hf_dataset})
     
     if add_metadata:
-        # Add conversation-level metadata
-        df['orig_message_count'] = df['orig_messages'].apply(len)
-        df['synthetic_message_count'] = df['synthetic_messages'].apply(len)
-        df['message_count_diff'] = df['orig_message_count'] - df['synthetic_message_count']
+        # Preserve any existing metadata
+        existing_metadata = dataset_dict[split_name].info.metadata or {}
         
-        # Add length statistics
-        df['orig_total_length'] = df['orig_messages'].apply(
-            lambda msgs: sum(len(m['text']) for m in msgs)
-        )
-        df['synthetic_total_length'] = df['synthetic_messages'].apply(
-            lambda msgs: sum(len(m['text'].split()) for m in msgs)
-        )
-        
-        # Add token counts (approximate using whitespace splitting)
-        df['orig_total_tokens'] = df['orig_messages'].apply(
-            lambda msgs: sum(len(m['text'].split()) for m in msgs)
-        )
-        df['synthetic_total_tokens'] = df['synthetic_messages'].apply(
-            lambda msgs: sum(len(m['text'].split()) for m in msgs)
-        )
+        # Update with new metadata if provided
+        if dataset_metadata:
+            # Merge existing and new metadata, with new taking precedence
+            merged_metadata = {**existing_metadata, **dataset_metadata}
+            dataset_dict[split_name].info.metadata = merged_metadata
     
-    # Convert to HuggingFace Dataset
-    hf_dataset = Dataset.from_pandas(df)
-    
-    # If split name is provided, wrap in DatasetDict
-    if split_name:
-        hf_dataset = DatasetDict({split_name: hf_dataset})
-    
-    return hf_dataset 
+    return dataset_dict 
