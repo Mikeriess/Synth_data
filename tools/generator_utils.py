@@ -349,38 +349,53 @@ def generate_dialogue_from_prompt(
     generation_config: Dict[str, Any],
     vllm_url: str = "http://0.0.0.0:8000/v1/chat/completions",
     headers: Dict[str, str] = {"Content-Type": "application/json"},
-    timeout: int = 120,  # Increased timeout
-    max_retries: int = 3  # Add retries
+    timeout: int = 120,
+    max_retries: int = 3
 ) -> Optional[str]:
     """
     Generate dialogue using vLLM API with retries and longer timeout.
     """
+    # Prepare the API request payload
+    payload = {
+        "model": generation_config["model"],
+        "messages": [
+            {
+                "role": "user",
+                "content": prompt
+            }
+        ],
+        "temperature": generation_config["temperature"],
+        "max_tokens": generation_config["max_tokens"],
+        "top_p": generation_config["top_p"]
+    }
+
     for attempt in range(max_retries):
         try:
             response = requests.post(
                 vllm_url,
                 headers=headers,
-                json={
-                    "messages": [{
-                        "role": "user", 
-                        "content": prompt
-                    }],
-                    **generation_config
-                },
+                json=payload,
                 timeout=timeout
             )
             response.raise_for_status()
             
+            # Print response for debugging
+            if response.status_code != 200:
+                print(f"API Response: {response.text}")
+                
             return response.json()['choices'][0]['message']['content']
             
         except requests.Timeout:
-            if attempt < max_retries - 1:  # Don't sleep on last attempt
+            if attempt < max_retries - 1:
                 print(f"Timeout on attempt {attempt + 1}, retrying after delay...")
-                time.sleep(5)  # Wait 5 seconds before retry
+                time.sleep(5)
             continue
         except Exception as e:
             print(f"Error generating dialogue: {e}")
-            return None 
+            print(f"Request payload: {json.dumps(payload, indent=2)}")
+            if hasattr(response, 'text'):
+                print(f"Response content: {response.text}")
+            return None
     
     print("All retries failed")
     return None
