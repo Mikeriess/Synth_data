@@ -14,7 +14,8 @@ from tools.generator_utils import (
     generate_dialogue_from_prompt,
     generate_dataset,
     create_analysis_dataset,
-    create_hf_dataset
+    create_hf_dataset,
+    parse_generated_dialogue_to_messages
 )
 from huggingface_hub import HfApi
 
@@ -92,6 +93,14 @@ def save_checkpoint(checkpoint_dir: str, generated_dataset: dict, processed_ids:
                 for msg in data['original_messages']
             ],
             'generated_output': str(data['generated_output']),
+            'parsed_messages': [
+                {
+                    'post_number': int(msg['post_number']),
+                    'poster_id': int(msg['poster_id']),
+                    'text': str(msg['text'])
+                }
+                for msg in data['parsed_messages']
+            ],
             'metadata': {
                 'model': str(data['metadata']['model'])
             }
@@ -181,9 +190,13 @@ def main(config_path: str):
                 )
                 
                 if generated_dialogue:
+                    # Parse the generated dialogue into messages
+                    parsed_messages = parse_generated_dialogue_to_messages(generated_dialogue)
+                    
                     generated_dataset[conv_id] = {
                         'original_messages': messages,
                         'generated_output': generated_dialogue,
+                        'parsed_messages': parsed_messages,
                         'metadata': {'model': config['generation_config']['model']}
                     }
                     processed_ids.add(conv_id)
