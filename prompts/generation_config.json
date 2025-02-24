@@ -12,9 +12,9 @@
     },
     "dataset_config": {
         "source_dataset": "mikeriess/LM_anonymized",
-        "num_conversations": 1000,
+        "num_conversations": 100,
         "output_dataset_name": "mikeriess/LM_dialogues1",
-        "push_to_hub": false,
+        "push_to_hub": true,
         "private": true
     },
     "runtime_config": {
