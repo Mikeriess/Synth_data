@@ -593,14 +593,8 @@ def create_hf_dataset(
     # Create dataset dictionary with splits
     dataset_dict = DatasetDict({split_name: hf_dataset})
     
-    if add_metadata:
-        # Preserve any existing metadata
-        existing_metadata = dataset_dict[split_name].info.metadata or {}
-        
-        # Update with new metadata if provided
-        if dataset_metadata:
-            # Merge existing and new metadata, with new taking precedence
-            merged_metadata = {**existing_metadata, **dataset_metadata}
-            dataset_dict[split_name].info.metadata = merged_metadata
+    if add_metadata and dataset_metadata:
+        # Set metadata directly on the dataset info
+        dataset_dict[split_name].info.metadata = dataset_metadata
     
     return dataset_dict 
