@@ -122,6 +122,11 @@ def main():
     # Load checkpoint if exists
     generated_dataset, processed_ids = load_checkpoint(runtime_config['checkpoint_dir'])
     
+    # Debug print
+    print(f"\nLoaded checkpoint with {len(generated_dataset)} conversations")
+    if generated_dataset:
+        print("Sample conversation structure:", list(generated_dataset.values())[0].keys())
+
     # Load prompt template and store its content
     PROMPT_TEMPLATE = load_prompt_template(prompt_config['template_file'])
     prompt_config['template_content'] = PROMPT_TEMPLATE  # Store actual prompt content
@@ -185,16 +190,33 @@ def main():
         # Final checkpoint
         save_checkpoint(runtime_config['checkpoint_dir'], generated_dataset, processed_ids)
 
+    # Before analysis, verify dataset structure
+    if not generated_dataset:
+        print("Error: No conversations were generated!")
+        return
+        
+    print(f"\nVerifying dataset structure for {len(generated_dataset)} conversations...")
+    for conv_id, data in generated_dataset.items():
+        if 'parsed_messages' not in data:
+            print(f"Warning: Conversation {conv_id} missing parsed_messages")
+            # Try to parse messages if we have generated output
+            if 'generated_output' in data:
+                data['parsed_messages'] = parse_generated_dialogue_to_messages(data['generated_output'])
+            else:
+                print(f"Error: Conversation {conv_id} has no generated output")
+                continue
+
     # Create metadata dictionary with all configurations including prompt content
     metadata = {
         "generation_config": generation_config,
         "dataset_config": dataset_config,
         "runtime_config": runtime_config,
-        "prompt_config": prompt_config,  # Now includes the template_content
+        "prompt_config": prompt_config,
         "timestamp": datetime.datetime.now().isoformat()
     }
 
     # Create analysis dataset
+    print("\nCreating analysis dataset...")
     model_name = generation_config["model"]
     analysis_dataset = create_analysis_dataset(generated_dataset, model_name)
 

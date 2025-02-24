@@ -544,7 +544,7 @@ def generate_dataset(
 def create_analysis_dataset(
     generated_dataset: Dict[str, Dict],
     model_name: str
-) -> List[Dict]:
+) -> pd.DataFrame:
     """
     Create a structured dataset for analysis from generated conversations.
     
@@ -553,25 +553,7 @@ def create_analysis_dataset(
         model_name: Name of the model used for generation
         
     Returns:
-        List of dictionaries with structure:
-        [
-            {
-                'model': str,
-                'conversation_id': str,
-                'turn_number': int,
-                'original_message': {
-                    'post_number': int,
-                    'poster_id': int,
-                    'text': str
-                },
-                'generated_message': {
-                    'post_number': int,
-                    'poster_id': int,
-                    'text': str
-                }
-            },
-            ...
-        ]
+        Pandas DataFrame with structured conversation data
     """
     analysis_dataset = []
     
@@ -594,7 +576,8 @@ def create_analysis_dataset(
             }
             analysis_dataset.append(turn_data)
     
-    return analysis_dataset 
+    # Convert to DataFrame before returning
+    return pd.DataFrame(analysis_dataset)
 
 def create_hf_dataset(
     analysis_dataset: pd.DataFrame,
