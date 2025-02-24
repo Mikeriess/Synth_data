@@ -7,6 +7,7 @@ from transformers import AutoTokenizer
 from datasets import Dataset, DatasetDict
 import pandas as pd
 import time
+import datasets
 
 class TokenLimitError(Exception):
     """Raised when token count exceeds model limits"""
@@ -594,7 +595,11 @@ def create_hf_dataset(
     dataset_dict = DatasetDict({split_name: hf_dataset})
     
     if add_metadata and dataset_metadata:
-        # Set metadata directly on the dataset info
-        dataset_dict[split_name].info.metadata = dataset_metadata
+        # Create a new DatasetInfo object
+        info = datasets.DatasetInfo()
+        # Add metadata to the info object
+        info._metadata = dataset_metadata
+        # Set the info on the dataset
+        dataset_dict[split_name]._info = info
     
     return dataset_dict 
