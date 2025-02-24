@@ -60,13 +60,29 @@ def load_checkpoint(checkpoint_dir: str) -> tuple[dict, set]:
         return checkpoint['generated_dataset'], set(checkpoint['processed_ids'])
     return {}, set()
 
+def convert_numpy_types(obj):
+    """Convert numpy types to native Python types for JSON serialization."""
+    import numpy as np
+    if isinstance(obj, np.integer):
+        return int(obj)
+    elif isinstance(obj, np.floating):
+        return float(obj)
+    elif isinstance(obj, np.ndarray):
+        return obj.tolist()
+    elif isinstance(obj, dict):
+        return {k: convert_numpy_types(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [convert_numpy_types(item) for item in obj]
+    return obj
+
 def save_checkpoint(checkpoint_dir: str, generated_dataset: dict, processed_ids: set):
     """Save current progress to checkpoint file."""
     checkpoint_path = Path(checkpoint_dir) / "checkpoint.json"
     os.makedirs(checkpoint_dir, exist_ok=True)
     
+    # Convert numpy types and prepare checkpoint
     checkpoint = {
-        'generated_dataset': generated_dataset,
+        'generated_dataset': convert_numpy_types(generated_dataset),
         'processed_ids': list(processed_ids)
     }
     
