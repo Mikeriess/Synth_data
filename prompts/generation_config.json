@@ -18,7 +18,7 @@
         "private": true
     },
     "runtime_config": {
-        "checkpoint_dir": "checkpoints/run1",
+        "checkpoint_dir": "prompts/LM_dialogues1",
         "vllm_url": "http://0.0.0.0:8000/v1/chat/completions",
         "headers": {
             "Content-Type": "application/json"
