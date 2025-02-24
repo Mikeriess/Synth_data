@@ -1,7 +1,7 @@
 Du er en dansk samtalegenerator. Generer en realistisk, anonymiseret dialog med flere udvekslinger mellem 2 personer på dansk, inspireret af følgende samtale som kontekst.
 
 VIGTIGT:
-- Al personfølsom information i konteksten skal erstattes med fiktivt indhold (herunder navne, adresser, telefonnumre, CPR-numre, email-adresser, SoMe-konti, organisationer, lokationer, datoer).
+- Al personfølsom information i konteksten skal erstattes med fiktivt indhold (herunder navne, adresser, telefonnumre, CPR-numre, email-adresser, SoMe-k, organisationer, lokationer, datoer).
 - Den første besked SKAL være et indledende spørgsmål som en bruger ønsker at få hjælp til.
 - Stil spørgsmålet i første besked sådan, at det giver kontekst for problemet.
 

@@ -8,48 +8,54 @@ import re
 import argparse
 import os
 from pathlib import Path
-import datetime
 from transformers import AutoTokenizer
 from datasets import load_dataset
 from tools.generator_utils import (
     generate_dialogue_from_prompt,
     generate_dataset,
     create_analysis_dataset,
-    create_hf_dataset,
-    parse_generated_dialogue_to_messages
+    create_hf_dataset
 )
+from huggingface_hub import HfApi
 
 """
 Usage:
 This script generates synthetic dialogues based on a source dataset and saves them locally and/or to HuggingFace Hub.
 
 Parameters:
---config_file: Path to the JSON configuration file
-    The configuration file containing all necessary parameters for dialogue generation
+--prompt_file: Path to the prompt template file (default: 'prompts/dialogue_prompt.txt')
+    The template file containing the prompt structure for dialogue generation
+
+--num_conversations: Number of conversations to generate (default: 1000)
+    Total number of synthetic dialogues to create
+
+--dataset_name: Name for the dataset when pushing to HuggingFace Hub (default: 'mikeriess/LM_dialogues1')
+    Format: 'username/dataset-name'
+
+--push_to_hub: Flag to enable pushing to HuggingFace Hub (default: False)
+    If set, uploads the dataset to HF Hub (requires authentication)
+
+--checkpoint_dir: Directory for storing checkpoints (default: 'checkpoints')
+    Saves progress every 100 conversations and enables resuming interrupted runs
 
 Examples:
 # Basic usage with defaults
-python generate_dialogues.py prompts/generation_config.json
+python generate_dialogues.py
 
 # Specify all parameters
-python generate_dialogues.py prompts/generation_config.json
+python generate_dialogues.py \
+    --prompt_file prompts/dialogue_prompt.txt \
+    --num_conversations 500 \
+    --dataset_name "mikeriess/my-dataset" \
+    --push_to_hub \
+    --checkpoint_dir "checkpoints/run1"
+
+# Generate 100 conversations without pushing to hub
+python generate_dialogues.py --num_conversations 100
 """
 
-def load_config(config_file: str) -> dict:
-    """Load and validate configuration from JSON file."""
-    with open(config_file, 'r', encoding='utf-8') as f:
-        config = json.load(f)
-    
-    required_keys = ['prompt_config', 'generation_config', 'dataset_config', 'runtime_config']
-    for key in required_keys:
-        if key not in config:
-            raise ValueError(f"Missing required configuration section: {key}")
-    
-    return config
-
-def load_prompt_template(template_file: str) -> str:
-    """Load prompt template from file."""
-    with open(template_file, 'r', encoding='utf-8') as f:
+def load_prompt_template(prompt_file):
+    with open(prompt_file, 'r', encoding='utf-8') as f:
         return f.read()
 
 def load_checkpoint(checkpoint_dir: str) -> tuple[dict, set]:
@@ -61,82 +67,69 @@ def load_checkpoint(checkpoint_dir: str) -> tuple[dict, set]:
         return checkpoint['generated_dataset'], set(checkpoint['processed_ids'])
     return {}, set()
 
-def convert_numpy_types(obj):
-    """Convert numpy types to native Python types for JSON serialization."""
-    import numpy as np
-    if isinstance(obj, np.integer):
-        return int(obj)
-    elif isinstance(obj, np.floating):
-        return float(obj)
-    elif isinstance(obj, np.ndarray):
-        return obj.tolist()
-    elif isinstance(obj, dict):
-        return {k: convert_numpy_types(v) for k, v in obj.items()}
-    elif isinstance(obj, list):
-        return [convert_numpy_types(item) for item in obj]
-    return obj
-
 def save_checkpoint(checkpoint_dir: str, generated_dataset: dict, processed_ids: set):
     """Save current progress to checkpoint file."""
     checkpoint_path = Path(checkpoint_dir) / "checkpoint.json"
     os.makedirs(checkpoint_dir, exist_ok=True)
     
-    # Convert numpy types and prepare checkpoint
     checkpoint = {
-        'generated_dataset': convert_numpy_types(generated_dataset),
+        'generated_dataset': generated_dataset,
         'processed_ids': list(processed_ids)
     }
     
     with open(checkpoint_path, 'w') as f:
         json.dump(checkpoint, f)
 
-def parse_args():
-    parser = argparse.ArgumentParser(description='Generate synthetic dialogues using configuration file')
-    parser.add_argument(
-        'config_file',
-        type=str,
-        help='Path to the JSON configuration file'
-    )
-    return parser.parse_args()
+def load_config(config_path: str) -> Dict:
+    """Load configuration from JSON file."""
+    with open(config_path, 'r') as f:
+        return json.load(f)
 
-def main():
-    # Load configuration
-    args = parse_args()
-    config = load_config(args.config_file)
+def upload_config_files(dataset_name: str, config_path: str, prompt_path: str):
+    """Upload configuration and prompt files to dataset repository."""
+    api = HfApi()
     
-    # Extract configurations
-    prompt_config = config['prompt_config']
-    generation_config = config['generation_config']
-    dataset_config = config['dataset_config']
-    runtime_config = config['runtime_config']
+    # Upload config file
+    api.upload_file(
+        path_or_fileobj=config_path,
+        path_in_repo="configs/generation_config.json",
+        repo_id=dataset_name,
+        repo_type="dataset"
+    )
+    
+    # Upload prompt file
+    api.upload_file(
+        path_or_fileobj=prompt_path,
+        path_in_repo="prompts/dialogue_prompt.txt",
+        repo_id=dataset_name,
+        repo_type="dataset"
+    )
+
+def main(config_path: str):
+    # Load configuration
+    config = load_config(config_path)
     
     # Ensure checkpoint directory exists
-    os.makedirs(runtime_config['checkpoint_dir'], exist_ok=True)
-    print(f"\nUsing checkpoint directory: {runtime_config['checkpoint_dir']}")
+    os.makedirs(config['files']['checkpoint_dir'], exist_ok=True)
+    print(f"\nUsing checkpoint directory: {config['files']['checkpoint_dir']}")
     
     # Load dataset
-    dataset = load_dataset(dataset_config['source_dataset'])
+    dataset = load_dataset(config['dataset_config']['source_dataset'])
     df = dataset['train'].to_pandas()
     conversations = dict(zip(df['conversation_id'], df['messages']))
 
     # Load checkpoint if exists
-    generated_dataset, processed_ids = load_checkpoint(runtime_config['checkpoint_dir'])
+    generated_dataset, processed_ids = load_checkpoint(config['files']['checkpoint_dir'])
     
-    # Debug print
-    print(f"\nLoaded checkpoint with {len(generated_dataset)} conversations")
-    if generated_dataset:
-        print("Sample conversation structure:", list(generated_dataset.values())[0].keys())
-
-    # Load prompt template and store its content
-    PROMPT_TEMPLATE = load_prompt_template(prompt_config['template_file'])
-    prompt_config['template_content'] = PROMPT_TEMPLATE  # Store actual prompt content
+    # Load prompt template
+    PROMPT_TEMPLATE = load_prompt_template(config['files']['prompt_file'])
 
     # Get remaining conversations to process
     remaining_ids = set(conversations.keys()) - processed_ids
     remaining_conversations = {k: conversations[k] for k in remaining_ids}
     
     # Calculate how many more conversations we need
-    conversations_needed = dataset_config['num_conversations'] - len(generated_dataset)
+    conversations_needed = config['dataset_config']['num_conversations'] - len(generated_dataset)
     
     if conversations_needed > 0:
         print(f"\nGenerating {conversations_needed} more conversations...")
@@ -151,34 +144,25 @@ def main():
                 break
                 
             try:
-                # Format context for single conversation
                 context = f"{messages[0]['poster_id']}: {messages[0]['text']}"
                 
-                # Generate dialogue
                 generated_dialogue = generate_dialogue_from_prompt(
                     prompt=PROMPT_TEMPLATE.format(context=context),
-                    generation_config=generation_config,
-                    vllm_url=runtime_config['vllm_url'],
-                    headers=runtime_config['headers']
+                    generation_config=config['generation_config']
                 )
                 
                 if generated_dialogue:
-                    # Parse the generated dialogue into messages
-                    parsed_messages = parse_generated_dialogue_to_messages(generated_dialogue)
-                    
                     generated_dataset[conv_id] = {
                         'original_messages': messages,
                         'generated_output': generated_dialogue,
-                        'parsed_messages': parsed_messages,  # Add parsed messages
-                        'metadata': {'model': generation_config['model']}
+                        'metadata': {'model': config['generation_config']['model']}
                     }
                     processed_ids.add(conv_id)
                     current_count += 1
                     pbar.update(1)
                     
-                    # Checkpoint every 100 conversations
                     if current_count % 100 == 0:
-                        save_checkpoint(runtime_config['checkpoint_dir'], generated_dataset, processed_ids)
+                        save_checkpoint(config['files']['checkpoint_dir'], generated_dataset, processed_ids)
                         print(f"\nCheckpoint saved at {current_count} conversations")
                 
             except Exception as e:
@@ -186,46 +170,15 @@ def main():
                 continue
         
         pbar.close()
-        
-        # Final checkpoint
-        save_checkpoint(runtime_config['checkpoint_dir'], generated_dataset, processed_ids)
+        save_checkpoint(config['files']['checkpoint_dir'], generated_dataset, processed_ids)
 
-    # Before analysis, verify dataset structure
-    if not generated_dataset:
-        print("Error: No conversations were generated!")
-        return
-        
-    print(f"\nVerifying dataset structure for {len(generated_dataset)} conversations...")
-    for conv_id, data in generated_dataset.items():
-        if 'parsed_messages' not in data:
-            print(f"Warning: Conversation {conv_id} missing parsed_messages")
-            # Try to parse messages if we have generated output
-            if 'generated_output' in data:
-                data['parsed_messages'] = parse_generated_dialogue_to_messages(data['generated_output'])
-            else:
-                print(f"Error: Conversation {conv_id} has no generated output")
-                continue
-
-    # Create metadata dictionary with all configurations including prompt content
-    metadata = {
-        "generation_config": generation_config,
-        "dataset_config": dataset_config,
-        "runtime_config": runtime_config,
-        "prompt_config": prompt_config,
-        "timestamp": datetime.datetime.now().isoformat()
-    }
-
-    # Create analysis dataset
-    print("\nCreating analysis dataset...")
-    model_name = generation_config["model"]
+    # Create and save dataset
+    model_name = config['generation_config']['model']
     analysis_dataset = create_analysis_dataset(generated_dataset, model_name)
-
-    # Convert to HuggingFace Dataset with metadata
     hf_dataset = create_hf_dataset(
         analysis_dataset=analysis_dataset,
         split_name="train",
-        add_metadata=True,
-        dataset_metadata=metadata
+        add_metadata=True
     )
 
     # Save dataset locally
@@ -234,18 +187,25 @@ def main():
     print(f"\nDataset saved locally to: {output_dir}")
 
     # Push to HuggingFace Hub if requested
-    if dataset_config['push_to_hub']:
+    if config['dataset_config']['push_to_hub']:
         hf_dataset.push_to_hub(
-            dataset_config['output_dataset_name'],
-            private=dataset_config['private'],
+            config['dataset_config']['output_dataset_name'],
+            private=config['dataset_config']['private'],
             token=True
         )
-        print(f"\nDataset pushed to HuggingFace Hub as: {dataset_config['output_dataset_name']}")
-
-    # Print some sample data
-    df = hf_dataset["train"].to_pandas()
-    print("\nSample conversation:")
-    print(df.iloc[0]["synthetic_messages"])
+        print(f"\nDataset pushed to HuggingFace Hub as: {config['dataset_config']['output_dataset_name']}")
+        
+        # Upload config and prompt files
+        upload_config_files(
+            config['dataset_config']['output_dataset_name'],
+            config_path,
+            config['files']['prompt_file']
+        )
+        print("\nConfiguration and prompt files uploaded to dataset repository")
 
 if __name__ == "__main__":
-    main() 
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--config', type=str, default='configs/generation_config.json',
+                      help='Path to generation configuration file')
+    args = parser.parse_args()
+    main(args.config) 

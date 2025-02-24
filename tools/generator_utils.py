@@ -7,7 +7,6 @@ from transformers import AutoTokenizer
 from datasets import Dataset, DatasetDict
 import pandas as pd
 import time
-import datasets
 
 class TokenLimitError(Exception):
     """Raised when token count exceeds model limits"""
@@ -350,53 +349,38 @@ def generate_dialogue_from_prompt(
     generation_config: Dict[str, Any],
     vllm_url: str = "http://0.0.0.0:8000/v1/chat/completions",
     headers: Dict[str, str] = {"Content-Type": "application/json"},
-    timeout: int = 120,
-    max_retries: int = 3
+    timeout: int = 120,  # Increased timeout
+    max_retries: int = 3  # Add retries
 ) -> Optional[str]:
     """
     Generate dialogue using vLLM API with retries and longer timeout.
     """
-    # Prepare the API request payload
-    payload = {
-        "model": generation_config["model"],
-        "messages": [
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ],
-        "temperature": generation_config["temperature"],
-        "max_tokens": generation_config["max_tokens"],
-        "top_p": generation_config["top_p"]
-    }
-
     for attempt in range(max_retries):
         try:
             response = requests.post(
                 vllm_url,
                 headers=headers,
-                json=payload,
+                json={
+                    "messages": [{
+                        "role": "user", 
+                        "content": prompt
+                    }],
+                    **generation_config
+                },
                 timeout=timeout
             )
             response.raise_for_status()
             
-            # Print response for debugging
-            if response.status_code != 200:
-                print(f"API Response: {response.text}")
-                
             return response.json()['choices'][0]['message']['content']
             
         except requests.Timeout:
-            if attempt < max_retries - 1:
+            if attempt < max_retries - 1:  # Don't sleep on last attempt
                 print(f"Timeout on attempt {attempt + 1}, retrying after delay...")
-                time.sleep(5)
+                time.sleep(5)  # Wait 5 seconds before retry
             continue
         except Exception as e:
             print(f"Error generating dialogue: {e}")
-            print(f"Request payload: {json.dumps(payload, indent=2)}")
-            if hasattr(response, 'text'):
-                print(f"Response content: {response.text}")
-            return None
+            return None 
     
     print("All retries failed")
     return None
@@ -545,7 +529,7 @@ def generate_dataset(
 def create_analysis_dataset(
     generated_dataset: Dict[str, Dict],
     model_name: str
-) -> pd.DataFrame:
+) -> List[Dict]:
     """
     Create a structured dataset for analysis from generated conversations.
     
@@ -554,7 +538,25 @@ def create_analysis_dataset(
         model_name: Name of the model used for generation
         
     Returns:
-        Pandas DataFrame with structured conversation data
+        List of dictionaries with structure:
+        [
+            {
+                'model': str,
+                'conversation_id': str,
+                'turn_number': int,
+                'original_message': {
+                    'post_number': int,
+                    'poster_id': int,
+                    'text': str
+                },
+                'generated_message': {
+                    'post_number': int,
+                    'poster_id': int,
+                    'text': str
+                }
+            },
+            ...
+        ]
     """
     analysis_dataset = []
     
@@ -577,29 +579,82 @@ def create_analysis_dataset(
             }
             analysis_dataset.append(turn_data)
     
-    # Convert to DataFrame before returning
-    return pd.DataFrame(analysis_dataset)
+    return analysis_dataset 
 
 def create_hf_dataset(
-    analysis_dataset: pd.DataFrame,
+    analysis_dataset: List[Dict],
     split_name: str = "train",
-    add_metadata: bool = True,
-    dataset_metadata: dict = None
-) -> Dataset:
-    """Create a HuggingFace dataset from the analysis dataset."""
+    add_metadata: bool = True
+) -> Union[Dataset, DatasetDict]:
+    """
+    Convert analysis dataset to HuggingFace Dataset with aligned original and synthetic messages.
+    Each row represents one conversation with all its messages.
+    """
+    # First group by conversation_id
+    conversations = {}
+    for item in analysis_dataset:
+        conv_id = item['conversation_id']
+        if conv_id not in conversations:
+            conversations[conv_id] = {
+                'model': item['model'],
+                'conversation_id': conv_id,
+                'orig_messages': [],
+                'synthetic_messages': []
+            }
+        
+        # Add messages to their respective lists with renamed fields
+        # Original messages - ordered dictionary without turn
+        conversations[conv_id]['orig_messages'].append(dict([
+            ('order', item['original_message']['post_number']),
+            ('user', item['original_message']['poster_id']),
+            ('text', item['original_message']['text'])
+        ]))
+        
+        # Synthetic messages - ordered dictionary with turn
+        # Calculate turn number (1-based pairs)
+        turn_number = ((item['generated_message']['post_number'] - 1) // 2) + 1
+        
+        # Create ordered dictionary with text as last key
+        conversations[conv_id]['synthetic_messages'].append(dict([
+            ('order', item['generated_message']['post_number']),
+            ('user', item['generated_message']['poster_id']),
+            ('turn', turn_number),
+            ('text', item['generated_message']['text'])
+        ]))
     
-    # Create the dataset
-    hf_dataset = Dataset.from_pandas(analysis_dataset)
+    # Convert to list of dictionaries
+    formatted_data = list(conversations.values())
     
-    # Create dataset dictionary with splits
-    dataset_dict = DatasetDict({split_name: hf_dataset})
+    # Create DataFrame
+    df = pd.DataFrame(formatted_data)
     
-    if add_metadata and dataset_metadata:
-        # Create a new DatasetInfo object
-        info = datasets.DatasetInfo()
-        # Add metadata to the info object
-        info._metadata = dataset_metadata
-        # Set the info on the dataset
-        dataset_dict[split_name]._info = info
+    if add_metadata:
+        # Add conversation-level metadata
+        df['orig_message_count'] = df['orig_messages'].apply(len)
+        df['synthetic_message_count'] = df['synthetic_messages'].apply(len)
+        df['message_count_diff'] = df['orig_message_count'] - df['synthetic_message_count']
+        
+        # Add length statistics
+        df['orig_total_length'] = df['orig_messages'].apply(
+            lambda msgs: sum(len(m['text']) for m in msgs)
+        )
+        df['synthetic_total_length'] = df['synthetic_messages'].apply(
+            lambda msgs: sum(len(m['text'].split()) for m in msgs)
+        )
+        
+        # Add token counts (approximate using whitespace splitting)
+        df['orig_total_tokens'] = df['orig_messages'].apply(
+            lambda msgs: sum(len(m['text'].split()) for m in msgs)
+        )
+        df['synthetic_total_tokens'] = df['synthetic_messages'].apply(
+            lambda msgs: sum(len(m['text'].split()) for m in msgs)
+        )
     
-    return dataset_dict 
+    # Convert to HuggingFace Dataset
+    hf_dataset = Dataset.from_pandas(df)
+    
+    # If split name is provided, wrap in DatasetDict
+    if split_name:
+        hf_dataset = DatasetDict({split_name: hf_dataset})
+    
+    return hf_dataset 

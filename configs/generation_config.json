@@ -1,14 +1,14 @@
 {
-    "prompt_config": {
-        "template_file": "prompts/dialogue_prompt.txt",
-        "description": "Template for generating Danish dialogues"
-    },
     "generation_config": {
         "model": "meta-llama/Llama-3.1-405B-Instruct-FP8",
         "temperature": 0.8,
         "max_tokens": 2048,
         "top_p": 0.95,
         "request_timeout": 500
+    },
+    "api_config": {
+        "vllm_url": "http://0.0.0.0:8000/v1/chat/completions",
+        "headers": {"Content-Type": "application/json"}
     },
     "dataset_config": {
         "source_dataset": "mikeriess/LM_anonymized",
@@ -17,11 +17,8 @@
         "push_to_hub": true,
         "private": true
     },
-    "runtime_config": {
-        "checkpoint_dir": "prompts/LM_dialogues1",
-        "vllm_url": "http://0.0.0.0:8000/v1/chat/completions",
-        "headers": {
-            "Content-Type": "application/json"
-        }
+    "files": {
+        "prompt_file": "prompts/dialogue_prompt.txt",
+        "checkpoint_dir": "prompts/LM_dialogues1"
     }
 } 
