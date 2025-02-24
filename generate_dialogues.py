@@ -72,13 +72,39 @@ def save_checkpoint(checkpoint_dir: str, generated_dataset: dict, processed_ids:
     checkpoint_path = Path(checkpoint_dir) / "checkpoint.json"
     os.makedirs(checkpoint_dir, exist_ok=True)
     
+    # Convert set to list and ensure all IDs are native Python types (not numpy)
+    processed_ids_list = [int(id_) for id_ in processed_ids]
+    
+    # Deep copy and convert the generated dataset to ensure JSON serialization
+    json_safe_dataset = {}
+    for conv_id, data in generated_dataset.items():
+        # Convert conversation ID to string if it isn't already
+        conv_id_str = str(conv_id)
+        
+        # Create a clean copy of the data
+        json_safe_dataset[conv_id_str] = {
+            'original_messages': [
+                {
+                    'post_number': int(msg['post_number']),
+                    'poster_id': int(msg['poster_id']),
+                    'text': str(msg['text'])
+                }
+                for msg in data['original_messages']
+            ],
+            'generated_output': str(data['generated_output']),
+            'metadata': {
+                'model': str(data['metadata']['model'])
+            }
+        }
+    
     checkpoint = {
-        'generated_dataset': generated_dataset,
-        'processed_ids': list(processed_ids)
+        'generated_dataset': json_safe_dataset,
+        'processed_ids': processed_ids_list
     }
     
-    with open(checkpoint_path, 'w') as f:
-        json.dump(checkpoint, f)
+    # Save to file
+    with open(checkpoint_path, 'w', encoding='utf-8') as f:
+        json.dump(checkpoint, f, ensure_ascii=False, indent=2)
 
 def load_config(config_path: str) -> Dict:
     """Load configuration from JSON file."""
