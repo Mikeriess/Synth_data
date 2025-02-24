@@ -344,46 +344,36 @@ def generate_synthetic_dialogue(
             print(json.dumps(messages, indent=2))
         raise 
 
-def generate_dialogue_from_prompt(
-    prompt: str,
-    generation_config: Dict[str, Any],
-    vllm_url: str = "http://0.0.0.0:8000/v1/chat/completions",
-    headers: Dict[str, str] = {"Content-Type": "application/json"},
-    timeout: int = 120,  # Increased timeout
-    max_retries: int = 3  # Add retries
-) -> Optional[str]:
-    """
-    Generate dialogue using vLLM API with retries and longer timeout.
-    """
-    for attempt in range(max_retries):
-        try:
-            response = requests.post(
-                vllm_url,
-                headers=headers,
-                json={
-                    "messages": [{
-                        "role": "user", 
-                        "content": prompt
-                    }],
-                    **generation_config
-                },
-                timeout=timeout
-            )
-            response.raise_for_status()
-            
-            return response.json()['choices'][0]['message']['content']
-            
-        except requests.Timeout:
-            if attempt < max_retries - 1:  # Don't sleep on last attempt
-                print(f"Timeout on attempt {attempt + 1}, retrying after delay...")
-                time.sleep(5)  # Wait 5 seconds before retry
-            continue
-        except Exception as e:
-            print(f"Error generating dialogue: {e}")
-            return None 
-    
-    print("All retries failed")
-    return None
+def generate_dialogue_from_prompt(prompt: str, generation_config: dict) -> str:
+    """Generate dialogue using vLLM API in OpenAI format."""
+    try:
+        # Prepare request in OpenAI chat format
+        request_data = {
+            "messages": [
+                {"role": "user", "content": prompt}
+            ],
+            "temperature": generation_config["temperature"],
+            "max_tokens": generation_config["max_tokens"],
+            "top_p": generation_config["top_p"],
+            "model": generation_config["model"]
+        }
+        
+        response = requests.post(
+            generation_config["api_config"]["vllm_url"],
+            headers=generation_config["api_config"]["headers"],
+            json=request_data,
+            timeout=generation_config["request_timeout"]
+        )
+        response.raise_for_status()
+        
+        # Extract response in OpenAI format
+        result = response.json()
+        generated_text = result['choices'][0]['message']['content']
+        return generated_text.strip()
+        
+    except Exception as e:
+        print(f"Error in dialogue generation: {str(e)}")
+        return None
 
 def parse_generated_dialogue_to_messages(
     generated_dialogue: str,

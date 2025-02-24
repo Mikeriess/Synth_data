@@ -148,7 +148,10 @@ def main(config_path: str):
                 
                 generated_dialogue = generate_dialogue_from_prompt(
                     prompt=PROMPT_TEMPLATE.format(context=context),
-                    generation_config=config['generation_config']
+                    generation_config={
+                        **config['generation_config'],
+                        'api_config': config['api_config']  # Include API configuration
+                    }
                 )
                 
                 if generated_dialogue:
