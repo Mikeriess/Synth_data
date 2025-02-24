@@ -15,7 +15,8 @@ from tools.generator_utils import (
     generate_dialogue_from_prompt,
     generate_dataset,
     create_analysis_dataset,
-    create_hf_dataset
+    create_hf_dataset,
+    parse_generated_dialogue_to_messages
 )
 
 """
@@ -157,9 +158,13 @@ def main():
                 )
                 
                 if generated_dialogue:
+                    # Parse the generated dialogue into messages
+                    parsed_messages = parse_generated_dialogue_to_messages(generated_dialogue)
+                    
                     generated_dataset[conv_id] = {
                         'original_messages': messages,
                         'generated_output': generated_dialogue,
+                        'parsed_messages': parsed_messages,  # Add parsed messages
                         'metadata': {'model': generation_config['model']}
                     }
                     processed_ids.add(conv_id)
