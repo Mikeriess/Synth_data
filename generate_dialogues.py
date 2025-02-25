@@ -196,12 +196,6 @@ def upload_intermediate_dataset(generated_dataset: dict, config: dict, current_c
         )
         print(f"\nIntermediate dataset ({current_count} conversations) pushed to HuggingFace Hub")
         
-        # Upload README with configuration
-        create_and_upload_readme(
-            config['dataset_config']['output_dataset_name'],
-            config
-        )
-        
     except Exception as e:
         print(f"\nWarning: Failed to upload intermediate dataset: {str(e)}")
 
@@ -313,14 +307,7 @@ def main(config_path: str):
             config_path,
             config['files']['prompt_file']
         )
-        
-        # Upload README with configuration
-        create_and_upload_readme(
-            config['dataset_config']['output_dataset_name'],
-            config
-        )
-        
-        print("\nConfiguration, prompt files, and README uploaded to dataset repository")
+        print("\nConfiguration and prompt files uploaded to dataset repository")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
