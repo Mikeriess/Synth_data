@@ -18,7 +18,7 @@ Usage:
 def main():
       
     # Call axolotl CLI directly
-    cmd = "axolotl train train_config.yml"
+    cmd = "axolotl train train_config_1gpu.yml"
     #cmd = "axolotl train train_config_8gpu.yml"
     sys.exit(os.system(cmd))
 
