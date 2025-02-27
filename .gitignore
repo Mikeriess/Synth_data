@@ -10,3 +10,4 @@ archive/
 last_run_prepared/
 examples/
 deepspeed_configs/
+experiments/
