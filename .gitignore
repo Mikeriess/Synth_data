@@ -11,6 +11,3 @@ last_run_prepared/
 examples/
 deepspeed_configs/
 experiments/
-__pycache__/
-.pytest_cache/
-annotations/

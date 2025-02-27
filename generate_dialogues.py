@@ -199,45 +199,9 @@ def upload_intermediate_dataset(generated_dataset: dict, config: dict, current_c
     except Exception as e:
         print(f"\nWarning: Failed to upload intermediate dataset: {str(e)}")
 
-def load_experiment_config(experiment_name: str) -> dict:
-    """
-    Load configuration files from experiment folder.
-    
-    Args:
-        experiment_name: Name of experiment folder in experiments/
-        
-    Returns:
-        Dictionary containing merged configuration
-    """
-    experiment_path = os.path.join('experiments', experiment_name)
-    
-    if not os.path.exists(experiment_path):
-        raise ValueError(f"Experiment folder '{experiment_path}' does not exist")
-        
-    # Load generation config
-    config_path = os.path.join(experiment_path, 'generation_config.json')
-    if not os.path.exists(config_path):
-        raise ValueError(f"Config file not found in {config_path}")
-        
-    with open(config_path, 'r') as f:
-        config = json.load(f)
-    
-    # Update prompt path to use experiment-specific prompt if it exists
-    experiment_prompt = os.path.join(experiment_path, 'dialogue_prompt.txt')
-    if os.path.exists(experiment_prompt):
-        config['files']['prompt_file'] = experiment_prompt
-        
-    return config
-
-def main():
-    # Set up argument parser
-    parser = argparse.ArgumentParser(description='Generate synthetic dialogues for an experiment')
-    parser.add_argument('experiment', 
-                       help='Name of experiment folder in experiments/')
-    args = parser.parse_args()
-    
-    # Load experiment configuration
-    config = load_experiment_config(args.experiment)
+def main(config_path: str):
+    # Load configuration
+    config = load_config(config_path)
     
     # Ensure checkpoint directory exists
     os.makedirs(config['files']['checkpoint_dir'], exist_ok=True)
@@ -340,10 +304,14 @@ def main():
         # Upload config and prompt files
         upload_config_files(
             config['dataset_config']['output_dataset_name'],
-            config['files']['config_path'],
+            config_path,
             config['files']['prompt_file']
         )
         print("\nConfiguration and prompt files uploaded to dataset repository")
 
 if __name__ == "__main__":
-    main() 
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--config', type=str, default='configs/generation_config.json',
+                      help='Path to generation configuration file')
+    args = parser.parse_args()
+    main(args.config) 
