@@ -47,8 +47,8 @@ python generate_dialogues.py
 # Specify all parameters
 python generate_dialogues.py \
     --prompt_file prompts/dialogue_prompt.txt \
-    --num_conversations 500 \
-    --dataset_name "mikeriess/my-dataset" \
+    --num_conversations 100 \
+    --dataset_name "mikeriess/lm_dialogues3_gemma9b" \
     --push_to_hub \
     --checkpoint_dir "checkpoints/run1"
 
@@ -62,7 +62,7 @@ def load_prompt_template(prompt_file):
 
 def load_checkpoint(checkpoint_dir: str) -> tuple[dict, set]:
     """Load existing generated dialogues and processed conversation IDs."""
-    checkpoint_path = Path(checkpoint_dir) / "checkpoint.json"
+    checkpoint_path = Path(checkpoint_dir) / "state/checkpoint.json"
     if checkpoint_path.exists():
         with open(checkpoint_path, 'r') as f:
             checkpoint = json.load(f)
@@ -71,8 +71,12 @@ def load_checkpoint(checkpoint_dir: str) -> tuple[dict, set]:
 
 def save_checkpoint(checkpoint_dir: str, generated_dataset: dict, processed_ids: set):
     """Save current progress to checkpoint file."""
-    checkpoint_path = Path(checkpoint_dir) / "checkpoint.json"
-    os.makedirs(checkpoint_dir, exist_ok=True)
+    # Create directory structure
+    checkpoint_dir = Path(checkpoint_dir)
+    state_dir = checkpoint_dir / "state"
+    state_dir.mkdir(parents=True, exist_ok=True)
+    
+    checkpoint_path = state_dir / "checkpoint.json"
     
     processed_ids_list = [int(id_) for id_ in processed_ids]
     
@@ -199,13 +203,42 @@ def upload_intermediate_dataset(generated_dataset: dict, config: dict, current_c
     except Exception as e:
         print(f"\nWarning: Failed to upload intermediate dataset: {str(e)}")
 
+def save_local_dataset(checkpoint_dir: str, hf_dataset, num_conversations: int):
+    """Save dataset locally in the checkpoint directory."""
+    output_dir = Path(checkpoint_dir) / f'synthetic_conversations_{num_conversations}'
+    hf_dataset.save_to_disk(output_dir)
+    return output_dir
+
+def backup_config_files(checkpoint_dir: str, config_path: str, prompt_path: str):
+    """Backup configuration and prompt files to checkpoint directory."""
+    config_dir = Path(checkpoint_dir) / "configs"
+    config_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Copy config file
+    config_backup = config_dir / "generation_config.json"
+    with open(config_path, 'r') as src, open(config_backup, 'w') as dst:
+        json.dump(json.load(src), dst, indent=2)
+    
+    # Copy prompt file
+    prompt_backup = config_dir / "dialogue_prompt.txt"
+    with open(prompt_path, 'r') as src, open(prompt_backup, 'w') as dst:
+        dst.write(src.read())
+
 def main(config_path: str):
     # Load configuration
     config = load_config(config_path)
     
-    # Ensure checkpoint directory exists
-    os.makedirs(config['files']['checkpoint_dir'], exist_ok=True)
-    print(f"\nUsing checkpoint directory: {config['files']['checkpoint_dir']}")
+    # Setup checkpoint directory structure
+    checkpoint_dir = Path(config['files']['checkpoint_dir'])
+    checkpoint_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Backup config and prompt files
+    backup_config_files(
+        checkpoint_dir,
+        config_path,
+        config['files']['prompt_file']
+    )
+    print(f"\nConfiguration files backed up to: {checkpoint_dir}/configs")
     
     # Load dataset
     dataset = load_dataset(config['dataset_config']['source_dataset'])
@@ -213,7 +246,7 @@ def main(config_path: str):
     conversations = dict(zip(df['conversation_id'], df['messages']))
 
     # Load checkpoint if exists
-    generated_dataset, processed_ids = load_checkpoint(config['files']['checkpoint_dir'])
+    generated_dataset, processed_ids = load_checkpoint(str(checkpoint_dir))
     
     # Load prompt template
     PROMPT_TEMPLATE = load_prompt_template(config['files']['prompt_file'])
@@ -264,7 +297,7 @@ def main(config_path: str):
                     
                     if current_count % 100 == 0:
                         # Save local checkpoint
-                        save_checkpoint(config['files']['checkpoint_dir'], generated_dataset, processed_ids)
+                        save_checkpoint(str(checkpoint_dir), generated_dataset, processed_ids)
                         print(f"\nCheckpoint saved at {current_count} conversations")
                         
                         # Upload intermediate dataset if push_to_hub is enabled
@@ -276,7 +309,7 @@ def main(config_path: str):
                 continue
         
         pbar.close()
-        save_checkpoint(config['files']['checkpoint_dir'], generated_dataset, processed_ids)
+        save_checkpoint(str(checkpoint_dir), generated_dataset, processed_ids)
 
     # Create and save dataset
     model_name = config['generation_config']['model']
@@ -287,9 +320,12 @@ def main(config_path: str):
         add_metadata=True
     )
 
-    # Save dataset locally
-    output_dir = f'data/synthetic_conversations_{len(generated_dataset)}'
-    hf_dataset.save_to_disk(output_dir)
+    # Save final dataset locally in checkpoint directory
+    output_dir = save_local_dataset(
+        str(checkpoint_dir),
+        hf_dataset,
+        len(generated_dataset)
+    )
     print(f"\nDataset saved locally to: {output_dir}")
 
     # Push to HuggingFace Hub if requested
@@ -301,11 +337,11 @@ def main(config_path: str):
         )
         print(f"\nDataset pushed to HuggingFace Hub as: {config['dataset_config']['output_dataset_name']}")
         
-        # Upload config and prompt files
+        # Upload config and prompt files from checkpoint directory
         upload_config_files(
             config['dataset_config']['output_dataset_name'],
-            config_path,
-            config['files']['prompt_file']
+            str(checkpoint_dir / "configs/generation_config.json"),
+            str(checkpoint_dir / "configs/dialogue_prompt.txt")
         )
         print("\nConfiguration and prompt files uploaded to dataset repository")
 

@@ -1,8 +1,8 @@
 {
     "generation_config": {
-        "model": "meta-llama/Llama-3.1-405B-Instruct-FP8",
+        "model": "google/gemma-2-27b-it",
         "temperature": 0.8,
-        "max_tokens": 2048,
+        "max_tokens": 4096,
         "top_p": 0.95,
         "request_timeout": 500
     },
@@ -12,13 +12,13 @@
     },
     "dataset_config": {
         "source_dataset": "mikeriess/LM_anonymized",
-        "num_conversations": 10000,
-        "output_dataset_name": "mikeriess/LM_dialogues1",
+        "num_conversations": 500,
+        "output_dataset_name": "mikeriess/LM_dialogues3_gemma27b",
         "push_to_hub": true,
         "private": true
     },
     "files": {
         "prompt_file": "prompts/dialogue_prompt.txt",
-        "checkpoint_dir": "prompts/LM_dialogues1"
+        "checkpoint_dir": "experiments/LM_dialogues3_gemma27b"
     }
 } 

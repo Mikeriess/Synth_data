@@ -11,3 +11,7 @@ last_run_prepared/
 examples/
 deepspeed_configs/
 experiments/
+token/
+.env
+.ipynb_checkpoints/
+.DS_Store

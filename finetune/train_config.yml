@@ -1,0 +1,92 @@
+base_model: NousResearch/Llama-3.2-1B
+# Automatically upload checkpoint and final model to HF
+hub_model_id: mikeriess/Llama-3.2-1B_LM
+
+load_in_8bit: false
+load_in_4bit: false
+strict: false
+
+datasets:
+  - path: mikeriess/LM_dialogues1
+    type: chat_template
+    chat_template: chatml
+    field_messages: messages
+    train_split: train
+    val_split: validation
+    roles_to_train: ["assistant"]
+    train_on_eos: "turn"
+
+dataset_prepared_path: last_run_prepared
+val_set_size: 0.1
+output_dir: ./outputs/lora-out
+
+adapter: lora
+lora_model_dir:
+
+sequence_len: 2048
+sample_packing: true
+eval_sample_packing: false #false as the dataset is very small and cannot be packed
+pad_to_sequence_len: true
+
+lora_r: 16
+lora_alpha: 32
+lora_dropout: 0.05
+lora_fan_in_fan_out:
+lora_target_modules:
+  - gate_proj
+  - down_proj
+  - up_proj
+  - q_proj
+  - v_proj
+  - k_proj
+  - o_proj
+
+wandb_project: "Llama-3.2-1B_LM"
+wandb_entity: "mikeriess"
+wandb_log_model: "all"
+
+# Save both adapter and merged model to HF
+save_safetensors: true
+hub_save_adapter: true 
+hub_save_merged: true
+hub_strategy: "every_save"
+push_hub: true
+
+# Track carbon emissions
+track_carbon_emissions: false
+codecarbon_dir: "emissions"
+
+gradient_accumulation_steps: 2
+micro_batch_size: 2
+num_epochs: 1
+optimizer: adamw_8bit
+lr_scheduler: cosine
+learning_rate: 0.0002
+
+train_on_inputs: false
+group_by_length: false
+bf16: auto
+fp16:
+tf32: false
+
+gradient_checkpointing: true
+early_stopping_patience:
+resume_from_checkpoint:
+local_rank:
+logging_steps: 1
+xformers_attention:
+flash_attention: true
+
+loss_watchdog_threshold: 5.0
+loss_watchdog_patience: 3
+
+warmup_steps: 10
+evals_per_epoch: 4
+saves_per_epoch: 1
+debug:
+deepspeed:
+weight_decay: 0.0
+fsdp:
+fsdp_config:
+special_tokens:
+  pad_token: "<|end_of_text|>"

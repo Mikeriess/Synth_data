@@ -4,6 +4,7 @@ VIGTIGT:
 - Al personfølsom information i konteksten skal erstattes med fiktivt indhold (herunder navne, adresser, telefonnumre, CPR-numre, email-adresser, SoMe-konti, organisationer, lokationer, datoer).
 - Den første besked SKAL være et indledende spørgsmål som en bruger ønsker at få hjælp til.
 - Stil spørgsmålet i første besked sådan, at det giver kontekst for problemet.
+- Alle entiteter i dialogen såsom musikudstyr, instrumenter, software, etc. skal ikke anonymiseres.
 
 Dialogen skal have mindst 1 udveksling frem og tilbage, men gerne følge antallet af udvekslinger i konteksten.
 

@@ -1,0 +1,26 @@
+services:
+  dev:
+    image: nvcr.io/nvidia/pytorch:23.12-py3
+    volumes:
+      - ../../:/workspace
+      - ${HF_HOME:-~/.cache/huggingface}:/root/.cache/huggingface
+    working_dir: /workspace
+    ports:
+      - "8888:8888"  # For Jupyter
+    environment:
+      - HUGGING_FACE_HUB_TOKEN=${HUGGING_FACE_HUB_TOKEN}
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    ipc: host
+    ulimits:
+      memlock: -1
+      stack: 67108864
+    # Keep container running and allow interactive use
+    stdin_open: true
+    tty: true
+    command: bash -c "pip install -r requirements.txt && jupyter lab --ip 0.0.0.0 --port 8888 --no-browser --allow-root" 

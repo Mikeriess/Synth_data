@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversation Inspector</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #2C001E;
+            color: #E95420;
+        }
+        .container {
+            display: flex;
+            gap: 20px;
+        }
+        .column {
+            flex: 1;
+            padding: 20px;
+            border: 1px solid #772953;
+            border-radius: 5px;
+            background-color: #2C001E;
+        }
+        .message {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #410D38;
+            color: #FFF;
+            border: 1px solid #772953;
+        }
+        .synthetic-message {
+            background-color: #38104D;
+        }
+        .controls {
+            margin: 0 0 20px 0;
+            text-align: center;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 0 5px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #E95420;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #772953;
+        }
+        button.random-btn {
+            background-color: #666666;
+        }
+        button.random-btn:hover {
+            background-color: #444444;
+        }
+        .jump-to {
+            display: inline-block;
+            margin-left: 20px;
+        }
+        .jump-to input {
+            width: 80px;
+            padding: 8px;
+            margin-right: 5px;
+            background-color: #2C001E;
+            color: #FFF;
+            border: 1px solid #772953;
+            border-radius: 5px;
+        }
+        .jump-to input:focus {
+            outline: none;
+            border-color: #E95420;
+        }
+        .metadata {
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #410D38;
+            border-radius: 5px;
+            border: 1px solid #772953;
+            color: #FFF;
+        }
+        #conversation-id {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        h2 {
+            color: #E95420;
+            border-bottom: 2px solid #772953;
+            padding-bottom: 10px;
+        }
+        .message strong {
+            color: #AEA79F;
+        }
+        .message p {
+            margin: 10px 0;
+            line-height: 1.4;
+        }
+        .notes-section {
+            margin: 0 0 20px 0;
+            padding: 15px;
+            background-color: #000000;
+            border-radius: 5px;
+            border: 1px solid #772953;
+            display: flex;
+            gap: 20px;
+        }
+        .notes-column {
+            width: 50%;
+        }
+        .ratings-column {
+            width: 50%;
+        }
+        .notes-section textarea {
+            width: 100%;
+            height: 100px;
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #000000;
+            color: #FFF;
+            border: 1px solid #772953;
+            border-radius: 5px;
+            font-family: Arial, sans-serif;
+            resize: none;
+        }
+        .notes-section h3 {
+            color: #E95420;
+            margin: 0 0 10px 0;
+        }
+        .save-note {
+            margin-top: 10px;
+            text-align: center;
+        }
+        .rating-scales {
+            margin: 10px 0;
+            border: 1px solid #772953;
+            border-radius: 5px;
+            padding: 10px;
+            background-color: #000000;
+            height: 150px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+        }
+        .rating-item {
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .rating-item label {
+            color: #FFF;
+            margin-right: 10px;
+            font-size: 0.9em;
+        }
+        .rating-options {
+            display: flex;
+            gap: 5px;
+        }
+        .rating-option {
+            display: flex;
+            align-items: center;
+        }
+        .rating-option input[type="radio"] {
+            display: none;
+        }
+        .rating-option label {
+            padding: 3px 8px;
+            background-color: #000000;
+            border: 1px solid #772953;
+            border-radius: 5px;
+            color: #FFF;
+            cursor: pointer;
+            min-width: auto;
+            transition: all 0.3s;
+            font-size: 0.9em;
+            position: relative;
+        }
+        .rating-option label:hover::after {
+            content: attr(title);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 4px 8px;
+            background-color: #772953;
+            color: white;
+            border-radius: 4px;
+            font-size: 0.8em;
+            white-space: nowrap;
+            z-index: 1;
+        }
+        .rating-option input[type="radio"]:checked + label {
+            background-color: #E95420;
+            border-color: #E95420;
+        }
+        .checkboxes {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #000000;
+            border: 1px solid #772953;
+            border-radius: 5px;
+            height: 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+        }
+        .checkbox-item {
+            color: #FFF;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+        .checkbox-item input[type="checkbox"] {
+            accent-color: #E95420;
+            width: 16px;
+            height: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="metadata">
+        <div id="conversation-id"></div>
+        <div id="conversation-count"></div>
+        <div style="text-align: right; margin-top: 10px;">
+            <a href="view_annotations.html" style="color: #E95420; text-decoration: none;">View All Annotations</a>
+        </div>
+    </div>
+    
+    <div class="controls">
+        <button onclick="previousConversation()">Previous</button>
+        <button onclick="randomConversation()" class="random-btn">Random</button>
+        <button onclick="nextConversation()">Next</button>
+        <span class="jump-to">
+            <input type="number" id="jump-index" min="1" placeholder="Index...">
+            <button onclick="jumpToIndex()">Go</button>
+        </span>
+    </div>
+    
+    <div class="notes-section">
+        <div class="notes-column">
+            <h3>Notes:</h3>
+            <textarea id="conversation-notes" placeholder="Add your notes about this conversation here..."></textarea>
+            <div class="checkboxes">
+                <label class="checkbox-item">
+                    <input type="checkbox" id="not-qa">
+                    Original are not question-answers
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" id="invalid-gen">
+                    Generated conversation is invalid
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" id="incomplete-orig">
+                    Original is incomplete
+                </label>
+            </div>
+        </div>
+        <div class="ratings-column">
+            <h3>Ratings:</h3>
+            <div class="rating-scales">
+                <div class="rating-item">
+                    <label>🇩🇰 Language Quality:</label>
+                    <div class="rating-options">
+                        <div class="rating-option">
+                            <input type="radio" name="language" id="lang-1" value="1">
+                            <label for="lang-1" title="Poor">1</label>
+                        </div>
+                        <div class="rating-option">
+                            <input type="radio" name="language" id="lang-2" value="2">
+                            <label for="lang-2" title="Below Fair">2</label>
+                        </div>
+                        <div class="rating-option">
+                            <input type="radio" name="language" id="lang-3" value="3">
+                            <label for="lang-3" title="Fair">3</label>
+                        </div>
+                        <div class="rating-option">
+                            <input type="radio" name="language" id="lang-4" value="4">
+                            <label for="lang-4" title="Above Fair">4</label>
+                        </div>
+                        <div class="rating-option">
+                            <input type="radio" name="language" id="lang-5" value="5">
+                            <label for="lang-5" title="Good">5</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="rating-item">
+                    <label>🤥 Factuality:</label>
+                    <div class="rating-options">
+                        <div class="rating-option">
+                            <input type="radio" name="factuality" id="fact-1" value="1">
+                            <label for="fact-1" title="Poor">1</label>
+                        </div>
+                        <div class="rating-option">
+                            <input type="radio" name="factuality" id="fact-2" value="2">
+                            <label for="fact-2" title="Below Fair">2</label>
+                        </div>
+                        <div class="rating-option">
+                            <input type="radio" name="factuality" id="fact-3" value="3">
+                            <label for="fact-3" title="Fair">3</label>
+                        </div>
+                        <div class="rating-option">
+                            <input type="radio" name="factuality" id="fact-4" value="4">
+                            <label for="fact-4" title="Above Fair">4</label>
+                        </div>
+                        <div class="rating-option">
+                            <input type="radio" name="factuality" id="fact-5" value="5">
+                            <label for="fact-5" title="Good">5</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="rating-item">
+                    <label>🧠 Knowledge Value:</label>
+                    <div class="rating-options">
+                        <div class="rating-option">
+                            <input type="radio" name="knowledge" id="know-1" value="1">
+                            <label for="know-1" title="Poor">1</label>
+                        </div>
+                        <div class="rating-option">
+                            <input type="radio" name="knowledge" id="know-2" value="2">
+                            <label for="know-2" title="Below Fair">2</label>
+                        </div>
+                        <div class="rating-option">
+                            <input type="radio" name="knowledge" id="know-3" value="3">
+                            <label for="know-3" title="Fair">3</label>
+                        </div>
+                        <div class="rating-option">
+                            <input type="radio" name="knowledge" id="know-4" value="4">
+                            <label for="know-4" title="Above Fair">4</label>
+                        </div>
+                        <div class="rating-option">
+                            <input type="radio" name="knowledge" id="know-5" value="5">
+                            <label for="know-5" title="Good">5</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="rating-item">
+                    <label>🎯 Similar to OP:</label>
+                    <div class="rating-options">
+                        <div class="rating-option">
+                            <input type="radio" name="similarity" id="sim-1" value="1">
+                            <label for="sim-1" title="Poor">1</label>
+                        </div>
+                        <div class="rating-option">
+                            <input type="radio" name="similarity" id="sim-2" value="2">
+                            <label for="sim-2" title="Below Fair">2</label>
+                        </div>
+                        <div class="rating-option">
+                            <input type="radio" name="similarity" id="sim-3" value="3">
+                            <label for="sim-3" title="Fair">3</label>
+                        </div>
+                        <div class="rating-option">
+                            <input type="radio" name="similarity" id="sim-4" value="4">
+                            <label for="sim-4" title="Above Fair">4</label>
+                        </div>
+                        <div class="rating-option">
+                            <input type="radio" name="similarity" id="sim-5" value="5">
+                            <label for="sim-5" title="Good">5</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="save-note">
+                <button onclick="saveEvaluation()">Save Evaluation</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="column">
+            <h2>Original Conversation 📄</h2>
+            <div id="original-messages"></div>
+        </div>
+        <div class="column">
+            <h2>Synthetic Conversation 🤖</h2>
+            <div id="synthetic-messages"></div>
+        </div>
+    </div>
+
+    <script src="inspector.js"></script>
+</body>
+</html> 
