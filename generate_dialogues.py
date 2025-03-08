@@ -235,14 +235,15 @@ def upload_intermediate_dataset(generated_dataset: dict, config: dict, current_c
             add_metadata=True
         )
         
-        # Push to HuggingFace Hub with count in name
-        intermediate_name = f"{config['dataset_config']['output_dataset_name']}_intermediate_{current_count}"
+        # Push to HuggingFace Hub using the final dataset name
+        # This will create the dataset if it doesn't exist, or update it if it does
         hf_dataset.push_to_hub(
-            intermediate_name,
+            config['dataset_config']['output_dataset_name'],
             private=config['dataset_config']['private'],
-            token=True
+            token=True,
+            commit_message=f"Intermediate update - {current_count} conversations"
         )
-        print(f"\nIntermediate dataset pushed to HuggingFace Hub as: {intermediate_name}")
+        print(f"\nIntermediate dataset ({current_count} conversations) pushed to HuggingFace Hub as: {config['dataset_config']['output_dataset_name']}")
         
     except Exception as e:
         print(f"\nWarning: Failed to upload intermediate dataset: {str(e)}")
@@ -269,9 +270,60 @@ def backup_config_files(checkpoint_dir: str, config_path: str, prompt_path: str)
     with open(prompt_path, 'r') as src, open(prompt_backup, 'w') as dst:
         dst.write(src.read())
 
+def build_context_with_token_limit(messages: List[Dict], prompt_template: str, max_input_tokens: int) -> str:
+    """
+    Build context from messages while respecting token limit.
+    
+    Args:
+        messages: List of message dictionaries
+        prompt_template: The prompt template string
+        max_input_tokens: Maximum allowed tokens for the entire input
+        
+    Returns:
+        Context string with as many messages as possible within token limit
+    """
+    # Initialize tokenizer (using a fast tokenizer for efficiency)
+    tokenizer = AutoTokenizer.from_pretrained("google/gemma-2-9b-it")
+    
+    # Calculate tokens in the prompt template (with an empty context)
+    prompt_tokens = len(tokenizer.encode(prompt_template.format(context="")))
+    
+    # Calculate available tokens for context
+    available_tokens = max_input_tokens - prompt_tokens
+    
+    if available_tokens <= 0:
+        print(f"Warning: Prompt template uses {prompt_tokens} tokens, exceeding the limit of {max_input_tokens}")
+        return ""
+    
+    # Build context incrementally
+    context_parts = []
+    total_context_tokens = 0
+    
+    for msg in messages:
+        # Format this message
+        msg_text = f"{msg['poster_id']}: {msg['text']}"
+        msg_tokens = len(tokenizer.encode(msg_text))
+        
+        # Check if adding this message would exceed the limit
+        if total_context_tokens + msg_tokens > available_tokens:
+            break
+        
+        # Add message to context
+        context_parts.append(msg_text)
+        total_context_tokens += msg_tokens
+    
+    # Join all context parts
+    context = "\n".join(context_parts)
+    
+    print(f"Using {len(context_parts)}/{len(messages)} messages ({total_context_tokens} tokens) for context")
+    return context
+
 def main(config_path: str):
     # Load configuration
     config = load_config(config_path)
+    
+    # Get max input tokens from config (with default fallback)
+    max_input_tokens = config.get('generation_config', {}).get('total_input_tokens', 512)
     
     # Setup checkpoint directory structure
     checkpoint_dir = Path(config['files']['checkpoint_dir'])
@@ -326,13 +378,18 @@ def main(config_path: str):
                     print(f"\nSkipping invalid conversation {conv_id}")
                     continue
                     
-                context = f"{messages[0]['poster_id']}: {messages[0]['text']}"
+                # Build context with token limit
+                context = build_context_with_token_limit(
+                    messages=messages,
+                    prompt_template=PROMPT_TEMPLATE,
+                    max_input_tokens=max_input_tokens
+                )
                 
                 generated_dialogue = generate_dialogue_from_prompt(
                     prompt=PROMPT_TEMPLATE.format(context=context),
                     generation_config={
                         **config['generation_config'],
-                        'api_config': config['api_config']  # Include API configuration
+                        'api_config': config['api_config']
                     }
                 )
                 

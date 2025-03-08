@@ -3,6 +3,7 @@
         "model": "google/gemma-2-27b-it",
         "temperature": 0.8,
         "max_tokens": 4096,
+        "total_input_tokens": 2048,
         "top_p": 0.95,
         "request_timeout": 500
     },
@@ -13,12 +14,12 @@
     "dataset_config": {
         "source_dataset": "mikeriess/LM_anonymized",
         "num_conversations": 100,
-        "output_dataset_name": "mikeriess/LM_dialogues3_gemma27b-2",
+        "output_dataset_name": "mikeriess/LM_dialogues3_gemma27b",
         "push_to_hub": true,
         "private": true
     },
     "files": {
         "prompt_file": "prompts/dialogue_prompt.txt",
-        "checkpoint_dir": "experiments/LM_dialogues3_gemma27b-2"
+        "checkpoint_dir": "experiments/LM_dialogues3_gemma27b"
     }
 } 
