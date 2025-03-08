@@ -69,6 +69,52 @@ def load_checkpoint(checkpoint_dir: str) -> tuple[dict, set]:
         return checkpoint['generated_dataset'], set(checkpoint['processed_ids'])
     return {}, set()
 
+def validate_conversation(messages: List[Dict]) -> bool:
+    """
+    Validate conversation messages for NaN values and required fields.
+    Returns True if valid, False otherwise.
+    """
+    try:
+        for msg in messages:
+            # Check for required fields
+            if not all(key in msg for key in ['post_number', 'poster_id', 'text']):
+                print(f"Warning: Missing required fields in message: {msg}")
+                return False
+            
+            # Check for NaN values
+            if any(pd.isna(msg.get(key)) for key in ['post_number', 'poster_id']):
+                print(f"Warning: Found NaN value in message: {msg}")
+                return False
+            
+            # Check for empty or NaN text
+            if pd.isna(msg.get('text')) or not str(msg.get('text')).strip():
+                print(f"Warning: Empty or NaN text in message: {msg}")
+                return False
+            
+            # Ensure numeric fields are valid
+            try:
+                int(msg.get('post_number'))
+                int(msg.get('poster_id'))
+            except (ValueError, TypeError):
+                print(f"Warning: Invalid numeric values in message: {msg}")
+                return False
+                
+        return True
+    except Exception as e:
+        print(f"Warning: Error validating conversation: {str(e)}")
+        return False
+
+def safe_int(value, default: int = 0) -> int:
+    """Safely convert value to integer, handling various edge cases."""
+    try:
+        if pd.isna(value):
+            return default
+        # Try converting to float first to handle string numbers
+        return int(float(value))
+    except (ValueError, TypeError):
+        print(f"Warning: Could not convert {value} to int, using default {default}")
+        return default
+
 def save_checkpoint(checkpoint_dir: str, generated_dataset: dict, processed_ids: set):
     """Save current progress to checkpoint file."""
     # Create directory structure
@@ -85,13 +131,6 @@ def save_checkpoint(checkpoint_dir: str, generated_dataset: dict, processed_ids:
         conv_id_str = str(conv_id)
         
         try:
-            # Function to safely convert to int, handling NaN
-            def safe_int(value):
-                if pd.isna(value):  # Check for NaN
-                    print(f"Warning: Found NaN value in conversation {conv_id}")
-                    return 0  # or some default value
-                return int(value)
-            
             json_safe_dataset[conv_id_str] = {
                 'original_messages': [
                     {
@@ -180,25 +219,30 @@ def create_and_upload_readme(dataset_name: str, config: dict):
 def upload_intermediate_dataset(generated_dataset: dict, config: dict, current_count: int):
     """Upload intermediate dataset to HuggingFace Hub."""
     try:
-        # Create analysis dataset
+        # Create a temporary analysis dataset
         model_name = config['generation_config']['model']
         analysis_dataset = create_analysis_dataset(generated_dataset, model_name)
         
-        # Convert to HF dataset
+        # Convert conversation_id to string in analysis dataset
+        for item in analysis_dataset:
+            if 'conversation_id' in item:
+                item['conversation_id'] = str(item['conversation_id'])
+        
+        # Create HF dataset
         hf_dataset = create_hf_dataset(
             analysis_dataset=analysis_dataset,
             split_name="train",
             add_metadata=True
         )
         
-        # Push to HF Hub with version tag
+        # Push to HuggingFace Hub with count in name
+        intermediate_name = f"{config['dataset_config']['output_dataset_name']}_intermediate_{current_count}"
         hf_dataset.push_to_hub(
-            config['dataset_config']['output_dataset_name'],
+            intermediate_name,
             private=config['dataset_config']['private'],
-            token=True,
-            commit_message=f"Intermediate upload - {current_count} conversations"
+            token=True
         )
-        print(f"\nIntermediate dataset ({current_count} conversations) pushed to HuggingFace Hub")
+        print(f"\nIntermediate dataset pushed to HuggingFace Hub as: {intermediate_name}")
         
     except Exception as e:
         print(f"\nWarning: Failed to upload intermediate dataset: {str(e)}")
@@ -206,7 +250,8 @@ def upload_intermediate_dataset(generated_dataset: dict, config: dict, current_c
 def save_local_dataset(checkpoint_dir: str, hf_dataset, num_conversations: int):
     """Save dataset locally in the checkpoint directory."""
     output_dir = Path(checkpoint_dir) / f'synthetic_conversations_{num_conversations}'
-    hf_dataset.save_to_disk(output_dir)
+    # Convert Path to string before saving
+    hf_dataset.save_to_disk(str(output_dir))
     return output_dir
 
 def backup_config_files(checkpoint_dir: str, config_path: str, prompt_path: str):
@@ -253,7 +298,12 @@ def main(config_path: str):
 
     # Get remaining conversations to process
     remaining_ids = set(conversations.keys()) - processed_ids
-    remaining_conversations = {k: conversations[k] for k in remaining_ids}
+    remaining_conversations = {
+        k: v for k, v in conversations.items() 
+        if k in remaining_ids and validate_conversation(v)
+    }
+    
+    print(f"\nValid conversations to process: {len(remaining_conversations)} out of {len(remaining_ids)} remaining")
     
     # Calculate how many more conversations we need
     conversations_needed = config['dataset_config']['num_conversations'] - len(generated_dataset)
@@ -271,6 +321,11 @@ def main(config_path: str):
                 break
                 
             try:
+                # Skip if conversation is invalid
+                if not validate_conversation(messages):
+                    print(f"\nSkipping invalid conversation {conv_id}")
+                    continue
+                    
                 context = f"{messages[0]['poster_id']}: {messages[0]['text']}"
                 
                 generated_dialogue = generate_dialogue_from_prompt(
@@ -314,6 +369,12 @@ def main(config_path: str):
     # Create and save dataset
     model_name = config['generation_config']['model']
     analysis_dataset = create_analysis_dataset(generated_dataset, model_name)
+    
+    # Convert conversation_id to string in analysis dataset
+    for item in analysis_dataset:
+        if 'conversation_id' in item:
+            item['conversation_id'] = str(item['conversation_id'])
+    
     hf_dataset = create_hf_dataset(
         analysis_dataset=analysis_dataset,
         split_name="train",

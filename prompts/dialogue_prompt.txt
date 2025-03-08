@@ -5,6 +5,7 @@ VIGTIGT:
 - Den første besked SKAL være et indledende spørgsmål som en bruger ønsker at få hjælp til.
 - Stil spørgsmålet i første besked sådan, at det giver kontekst for problemet.
 - Alle entiteter i dialogen såsom musikudstyr, instrumenter, software, etc. skal ikke anonymiseres.
+- Sørg så vidt muligt for at dialogen slutter med en løsning på problemet, hvis den findes i konteksten.
 
 Dialogen skal have mindst 1 udveksling frem og tilbage, men gerne følge antallet af udvekslinger i konteksten.
 
@@ -19,4 +20,4 @@ Person 2: [svar]
 Kontekst:
 {context}
 
-Generer en ny, lignende og anonymiseret dialog omhandlende samme problemstilling: 
+Generer en lignende og anonymiseret dialog omhandlende samme problemstilling: 

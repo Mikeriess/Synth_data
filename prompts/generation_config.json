@@ -12,13 +12,13 @@
     },
     "dataset_config": {
         "source_dataset": "mikeriess/LM_anonymized",
-        "num_conversations": 500,
-        "output_dataset_name": "mikeriess/LM_dialogues3_gemma27b",
+        "num_conversations": 100,
+        "output_dataset_name": "mikeriess/LM_dialogues3_gemma27b-2",
         "push_to_hub": true,
         "private": true
     },
     "files": {
         "prompt_file": "prompts/dialogue_prompt.txt",
-        "checkpoint_dir": "experiments/LM_dialogues3_gemma27b"
+        "checkpoint_dir": "experiments/LM_dialogues3_gemma27b-2"
     }
 } 
