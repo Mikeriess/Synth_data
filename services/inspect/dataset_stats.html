@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dataset Statistics</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: #2C001E;
+            color: #E95420;
+        }
+        .header {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header a {
+            color: #E95420;
+            text-decoration: none;
+            padding: 8px 15px;
+            border: 1px solid #772953;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        .header a:hover {
+            background-color: #772953;
+            color: white;
+        }
+        .dataset-info {
+            margin-bottom: 25px;
+            font-size: 18px;
+            color: #E95420;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #772953;
+        }
+        .stats-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .stats-card {
+            background-color: #410D38;
+            border: 1px solid #772953;
+            border-radius: 5px;
+            padding: 20px;
+            color: #FFF;
+        }
+        .chart-section {
+            margin-bottom: 60px;
+        }
+        .chart-title {
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: #E95420;
+            border-bottom: 1px solid #772953;
+            padding-bottom: 10px;
+        }
+        .chart-container {
+            position: relative;
+            height: 450px;
+            width: 100%;
+        }
+        .loading {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(44, 0, 30, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            color: #E95420;
+            font-size: 18px;
+            border-radius: 5px;
+        }
+        .spinner {
+            border: 4px solid #772953;
+            border-top: 4px solid #E95420;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 2s linear infinite;
+            margin-right: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #772953;
+        }
+        th {
+            color: #E95420;
+        }
+        .chart-description {
+            color: #CCC;
+            font-size: 14px;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+        .prompt-container {
+            position: relative;
+            background-color: #410D38;
+            border: 1px solid #772953;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 40px;
+        }
+        .prompt-text {
+            font-family: monospace;
+            white-space: pre-wrap;
+            color: #FFF;
+            line-height: 1.5;
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 10px;
+            background-color: #2C001E;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Dataset Statistics</h1>
+        <div>
+            <a href="index.html">Back to Inspector</a>
+            <a href="view_annotations.html">View Annotations</a>
+        </div>
+    </div>
+
+    <div id="dataset-info" class="dataset-info">Loading dataset information...</div>
+
+    <div class="stats-container">
+        <div class="stats-card">
+            <h2 class="chart-title">Post Count Statistics</h2>
+            <table id="message-stats">
+                <tr>
+                    <th>Metric</th>
+                    <th>Original</th>
+                    <th>Synthetic</th>
+                </tr>
+                <tr>
+                    <td>Average Posts/Thread</td>
+                    <td id="orig-msg-avg">-</td>
+                    <td id="synth-msg-avg">-</td>
+                </tr>
+                <tr>
+                    <td>Median Posts/Thread</td>
+                    <td id="orig-msg-median">-</td>
+                    <td id="synth-msg-median">-</td>
+                </tr>
+                <tr>
+                    <td>Min Posts</td>
+                    <td id="orig-msg-min">-</td>
+                    <td id="synth-msg-min">-</td>
+                </tr>
+                <tr>
+                    <td>Max Posts</td>
+                    <td id="orig-msg-max">-</td>
+                    <td id="synth-msg-max">-</td>
+                </tr>
+                <tr>
+                    <td>Correlation</td>
+                    <td colspan="2" id="msg-correlation">-</td>
+                </tr>
+            </table>
+        </div>
+        <div class="stats-card">
+            <h2 class="chart-title">Character Statistics</h2>
+            <table id="char-stats">
+                <tr>
+                    <th>Metric</th>
+                    <th>Original</th>
+                    <th>Synthetic</th>
+                </tr>
+                <tr>
+                    <td>Avg Words/Post</td>
+                    <td id="orig-words-avg">-</td>
+                    <td id="synth-words-avg">-</td>
+                </tr>
+                <tr>
+                    <td>Avg Chars/Post</td>
+                    <td id="orig-chars-avg">-</td>
+                    <td id="synth-chars-avg">-</td>
+                </tr>
+                <tr>
+                    <td>Total Words</td>
+                    <td id="orig-words-total">-</td>
+                    <td id="synth-words-total">-</td>
+                </tr>
+                <tr>
+                    <td>Total Chars</td>
+                    <td id="orig-chars-total">-</td>
+                    <td id="synth-chars-total">-</td>
+                </tr>
+            </table>
+        </div>
+        <div class="stats-card">
+            <h2 class="chart-title">Token Statistics</h2>
+            <table id="token-stats">
+                <tr>
+                    <th>Metric</th>
+                    <th>Original</th>
+                    <th>Synthetic</th>
+                </tr>
+                <tr>
+                    <td>Avg Tokens/Post</td>
+                    <td id="orig-tokens-avg">-</td>
+                    <td id="synth-tokens-avg">-</td>
+                </tr>
+                <tr>
+                    <td>Median Tokens/Post</td>
+                    <td id="orig-tokens-median">-</td>
+                    <td id="synth-tokens-median">-</td>
+                </tr>
+                <tr>
+                    <td>Total Tokens</td>
+                    <td id="orig-tokens-total">-</td>
+                    <td id="synth-tokens-total">-</td>
+                </tr>
+                <tr>
+                    <td>Total Token Ratio (Synth/Orig)</td>
+                    <td colspan="2" id="token-ratio">-</td>
+                </tr>
+            </table>
+        </div>
+        <div class="stats-card">
+            <h2 class="chart-title">Distribution Comparison Tests</h2>
+            <table id="stat-tests">
+                <tr>
+                    <th>Metric</th>
+                    <th>Test</th>
+                    <th>Result</th>
+                    <th>Significant?</th>
+                </tr>
+                <tr>
+                    <td rowspan="2">Post Counts</td>
+                    <td>Kolmogorov-Smirnov</td>
+                    <td id="ks-message-result">-</td>
+                    <td id="ks-message-sig">-</td>
+                </tr>
+                <tr>
+                    <td>Mann-Whitney U</td>
+                    <td id="mw-message-result">-</td>
+                    <td id="mw-message-sig">-</td>
+                </tr>
+                <tr>
+                    <td>Character Counts</td>
+                    <td>Kolmogorov-Smirnov</td>
+                    <td id="ks-char-result">-</td>
+                    <td id="ks-char-sig">-</td>
+                </tr>
+                <tr>
+                    <td>Length Distribution</td>
+                    <td>Chi-Square</td>
+                    <td id="chi-length-result">-</td>
+                    <td id="chi-length-sig">-</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="chart-section">
+        <h2 class="chart-title">Generation Config</h2>
+        <p class="chart-description">This is the configuration used for generating the synthetic conversations in this dataset.</p>
+        <div class="prompt-container">
+            <div id="loading-config" class="loading">
+                <div class="spinner"></div>
+                <div>Loading config...</div>
+            </div>
+            <pre id="config-content" class="prompt-text"></pre>
+        </div>
+    </div>
+
+    <div class="chart-section">
+        <h2 class="chart-title">Post Count Comparison</h2>
+        <p class="chart-description">This scatter plot shows the relationship between the number of posts in original conversations (x-axis) and synthetic conversations (y-axis). Each point represents one conversation thread.</p>
+        <div class="chart-container">
+            <div id="loading-msg-count" class="loading">
+                <div class="spinner"></div>
+                <div>Loading chart data...</div>
+            </div>
+            <canvas id="messageCountChart"></canvas>
+        </div>
+    </div>
+
+    <div class="chart-section">
+        <h2 class="chart-title">Post Character Distribution</h2>
+        <p class="chart-description">This histogram shows the distribution of post character counts for both original and synthetic posts. The x-axis shows character count ranges, and the y-axis shows the frequency (number of posts).</p>
+        <div class="chart-container">
+            <div id="loading-msg-length" class="loading">
+                <div class="spinner"></div>
+                <div>Loading chart data...</div>
+            </div>
+            <canvas id="messageLengthChart"></canvas>
+        </div>
+    </div>
+
+    <div class="chart-section">
+        <h2 class="chart-title">Token Distribution</h2>
+        <p class="chart-description">This histogram shows the distribution of token counts for both original and synthetic posts. The x-axis shows token count ranges, and the y-axis shows the frequency (number of posts).</p>
+        <div class="chart-container">
+            <div id="loading-token-dist" class="loading">
+                <div class="spinner"></div>
+                <div>Loading chart data...</div>
+            </div>
+            <canvas id="tokenDistChart"></canvas>
+        </div>
+    </div>
+
+    <div class="chart-section">
+        <h2 class="chart-title">User Count Comparison</h2>
+        <p class="chart-description">This bar chart compares the number of unique users in original and synthetic conversations. The x-axis shows the number of users per conversation thread, and the y-axis shows how many conversations have that number of users.</p>
+        <div class="chart-container">
+            <div id="loading-user-count" class="loading">
+                <div class="spinner"></div>
+                <div>Loading chart data...</div>
+            </div>
+            <canvas id="userCountChart"></canvas>
+        </div>
+    </div>
+
+    <div class="chart-section">
+        <h2 class="chart-title">Dialogue Prompt</h2>
+        <p class="chart-description">This is the prompt used to generate the synthetic conversations in this dataset.</p>
+        <div class="prompt-container">
+            <div id="loading-prompt" class="loading">
+                <div class="spinner"></div>
+                <div>Loading prompt...</div>
+            </div>
+            <pre id="prompt-content" class="prompt-text"></pre>
+        </div>
+    </div>
+
+    <script>
+        // Function to fetch dataset statistics
+        async function fetchDatasetStats() {
+            try {
+                // First, load the current dataset info
+                let currentDataset = {};
+                try {
+                    const datasetResponse = await fetch('current_dataset.json');
+                    currentDataset = await datasetResponse.json();
+                } catch (e) {
+                    console.warn("Could not load current dataset info:", e);
+                    document.getElementById('dataset-info').textContent = 'Error: No dataset currently loaded';
+                    return;
+                }
+                
+                // Update the dataset info display
+                const datasetInfo = document.getElementById('dataset-info');
+                if (datasetInfo && currentDataset.dataset_id) {
+                    datasetInfo.textContent = `Dataset: ${currentDataset.dataset_id}`;
+                }
+                
+                // Fetch the statistics
+                const response = await fetch('/dataset_stats');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch dataset statistics');
+                }
+                
+                const stats = await response.json();
+                
+                // Update the statistics tables
+                updateStatsTables(stats);
+                
+                // Create the charts
+                createMessageCountChart(stats.message_counts);
+                createMessageLengthChart(stats.message_lengths);
+                createTokenDistChart(stats.message_lengths);
+                createUserCountChart(stats.user_counts);
+                
+            } catch (error) {
+                console.error('Error fetching dataset statistics:', error);
+                document.getElementById('dataset-info').textContent = `Error: ${error.message}`;
+            }
+        }
+        
+        // Function to update the statistics tables
+        function updateStatsTables(stats) {
+            // Message count statistics
+            document.getElementById('orig-msg-avg').textContent = stats.message_counts.orig_avg.toFixed(2);
+            document.getElementById('synth-msg-avg').textContent = stats.message_counts.synth_avg.toFixed(2);
+            document.getElementById('orig-msg-median').textContent = stats.message_counts.orig_median.toFixed(2);
+            document.getElementById('synth-msg-median').textContent = stats.message_counts.synth_median.toFixed(2);
+            document.getElementById('orig-msg-min').textContent = stats.message_counts.orig_min;
+            document.getElementById('synth-msg-min').textContent = stats.message_counts.synth_min;
+            document.getElementById('orig-msg-max').textContent = stats.message_counts.orig_max;
+            document.getElementById('synth-msg-max').textContent = stats.message_counts.synth_max;
+            document.getElementById('msg-correlation').textContent = stats.message_counts.correlation.toFixed(3);
+            
+            // Character statistics
+            document.getElementById('orig-words-avg').textContent = stats.message_lengths.orig_words_avg.toFixed(2);
+            document.getElementById('synth-words-avg').textContent = stats.message_lengths.synth_words_avg.toFixed(2);
+            document.getElementById('orig-chars-avg').textContent = stats.message_lengths.orig_chars_avg.toFixed(2);
+            document.getElementById('synth-chars-avg').textContent = stats.message_lengths.synth_chars_avg.toFixed(2);
+            document.getElementById('orig-words-total').textContent = stats.message_lengths.orig_words_total.toLocaleString();
+            document.getElementById('synth-words-total').textContent = stats.message_lengths.synth_words_total.toLocaleString();
+            document.getElementById('orig-chars-total').textContent = stats.message_lengths.orig_chars_total.toLocaleString();
+            document.getElementById('synth-chars-total').textContent = stats.message_lengths.synth_chars_total.toLocaleString();
+            
+            // Token statistics (estimated based on words)
+            const origTokensAvg = stats.message_lengths.orig_words_avg * 1.3;
+            const synthTokensAvg = stats.message_lengths.synth_words_avg * 1.3;
+            const origTokensTotal = Math.round(stats.message_lengths.orig_words_total * 1.3);
+            const synthTokensTotal = Math.round(stats.message_lengths.synth_words_total * 1.3);
+            
+            // Estimate median tokens (using the same ratio as for average)
+            const origTokensMedian = stats.message_lengths.orig_words_avg * 1.3; // Using avg as an approximation
+            const synthTokensMedian = stats.message_lengths.synth_words_avg * 1.3; // Using avg as an approximation
+            
+            document.getElementById('orig-tokens-avg').textContent = origTokensAvg.toFixed(2);
+            document.getElementById('synth-tokens-avg').textContent = synthTokensAvg.toFixed(2);
+            document.getElementById('orig-tokens-median').textContent = origTokensMedian.toFixed(2);
+            document.getElementById('synth-tokens-median').textContent = synthTokensMedian.toFixed(2);
+            document.getElementById('orig-tokens-total').textContent = origTokensTotal.toLocaleString();
+            document.getElementById('synth-tokens-total').textContent = synthTokensTotal.toLocaleString();
+            
+            // Calculate and display the token ratio (synthetic/original)
+            const tokenRatio = origTokensTotal > 0 ? (synthTokensTotal / origTokensTotal).toFixed(2) : '-';
+            document.getElementById('token-ratio').textContent = tokenRatio;
+            
+            // Run statistical tests
+            try {
+                // Kolmogorov-Smirnov test for message counts
+                const ksMessageTest = kolmogorovSmirnovTest(
+                    stats.message_counts.orig_counts,
+                    stats.message_counts.synth_counts
+                );
+                document.getElementById('ks-message-result').textContent = 
+                    `D = ${ksMessageTest.statistic.toFixed(3)}`;
+                document.getElementById('ks-message-sig').textContent = 
+                    ksMessageTest.significant ? 'Yes (p<0.05)' : 'No';
+                
+                // Kolmogorov-Smirnov test for character counts
+                const ksCharTest = kolmogorovSmirnovTest(
+                    stats.message_lengths.orig_lengths,
+                    stats.message_lengths.synth_lengths
+                );
+                document.getElementById('ks-char-result').textContent = 
+                    `D = ${ksCharTest.statistic.toFixed(3)}`;
+                document.getElementById('ks-char-sig').textContent = 
+                    ksCharTest.significant ? 'Yes (p<0.05)' : 'No';
+                
+                // Chi-Square test for message length distribution
+                const chiLengthTest = chiSquareTest(
+                    stats.message_lengths.orig_hist,
+                    stats.message_lengths.synth_hist
+                );
+                document.getElementById('chi-length-result').textContent = 
+                    `χ² = ${chiLengthTest.statistic.toFixed(2)}, df = ${chiLengthTest.degreesOfFreedom}`;
+                document.getElementById('chi-length-sig').textContent = 
+                    chiLengthTest.significant ? 'Yes (p<0.05)' : 'No';
+                
+                // Mann-Whitney U test for message counts
+                const mwMessageTest = mannWhitneyUTest(
+                    stats.message_counts.orig_counts,
+                    stats.message_counts.synth_counts
+                );
+                document.getElementById('mw-message-result').textContent = 
+                    `U = ${mwMessageTest.u.toFixed(0)}, z = ${mwMessageTest.z.toFixed(2)}`;
+                document.getElementById('mw-message-sig').textContent = 
+                    mwMessageTest.significant ? 'Yes (p<0.05)' : 'No';
+            } catch (error) {
+                console.error('Error calculating statistical tests:', error);
+                document.getElementById('ks-message-result').textContent = 'Error';
+                document.getElementById('ks-char-result').textContent = 'Error';
+                document.getElementById('chi-length-result').textContent = 'Error';
+                document.getElementById('mw-message-result').textContent = 'Error';
+            }
+        }
+        
+        // Function to create the message count chart
+        function createMessageCountChart(data) {
+            const ctx = document.getElementById('messageCountChart').getContext('2d');
+            
+            // Hide loading indicator
+            document.getElementById('loading-msg-count').style.display = 'none';
+            
+            // Create scatter plot
+            new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Conversations',
+                        data: data.scatter_data,
+                        backgroundColor: 'rgba(233, 84, 32, 0.6)',
+                        borderColor: 'rgba(233, 84, 32, 1)',
+                        borderWidth: 1,
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Number of Posts in Original Conversation',
+                                color: '#E95420',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                color: '#FFF'
+                            },
+                            grid: {
+                                color: 'rgba(119, 41, 83, 0.3)'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Number of Posts in Synthetic Conversation',
+                                color: '#E95420',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                color: '#FFF'
+                            },
+                            grid: {
+                                color: 'rgba(119, 41, 83, 0.3)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#FFF'
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Conversation ID: ${context.raw.id}, Original: ${context.raw.x} posts, Synthetic: ${context.raw.y} posts`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Function to create the message length chart
+        function createMessageLengthChart(data) {
+            const ctx = document.getElementById('messageLengthChart').getContext('2d');
+            
+            // Hide loading indicator
+            document.getElementById('loading-msg-length').style.display = 'none';
+            
+            // Create histogram
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.bins.map(bin => `${bin}-${bin+50}`),
+                    datasets: [
+                        {
+                            label: 'Original Posts',
+                            data: data.orig_hist,
+                            backgroundColor: 'rgba(53, 162, 235, 0.5)',
+                            borderColor: 'rgba(53, 162, 235, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Synthetic Posts',
+                            data: data.synth_hist,
+                            backgroundColor: 'rgba(233, 84, 32, 0.5)',
+                            borderColor: 'rgba(233, 84, 32, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Characters per Post',
+                                color: '#E95420',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                color: '#FFF',
+                                callback: function(value, index) {
+                                    // Show fewer labels for readability
+                                    return index % 4 === 0 ? this.getLabelForValue(value) : '';
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(119, 41, 83, 0.3)'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Number of Posts',
+                                color: '#E95420',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                color: '#FFF'
+                            },
+                            grid: {
+                                color: 'rgba(119, 41, 83, 0.3)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#FFF'
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                title: function(tooltipItems) {
+                                    const item = tooltipItems[0];
+                                    const bin = data.bins[item.dataIndex];
+                                    return `${bin}-${bin+50} characters`;
+                                },
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.raw} posts`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Function to create the token distribution chart
+        function createTokenDistChart(data) {
+            const ctx = document.getElementById('tokenDistChart').getContext('2d');
+            
+            // Hide loading indicator
+            document.getElementById('loading-token-dist').style.display = 'none';
+            
+            // Create token bins (0-25, 25-50, etc.)
+            const tokenBins = Array.from({length: 20}, (_, i) => i * 25);
+            
+            // Create histograms for tokens (estimated based on word counts)
+            // In a real implementation, you would use actual token counts from the server
+            const origTokenCounts = data.orig_words.map(count => Math.round(count * 1.3));
+            const synthTokenCounts = data.synth_words.map(count => Math.round(count * 1.3));
+            
+            // Create histograms
+            const origTokenHist = new Array(20).fill(0);
+            const synthTokenHist = new Array(20).fill(0);
+            
+            // Fill histograms
+            origTokenCounts.forEach(count => {
+                const binIndex = Math.min(Math.floor(count / 25), 19);
+                origTokenHist[binIndex]++;
+            });
+            
+            synthTokenCounts.forEach(count => {
+                const binIndex = Math.min(Math.floor(count / 25), 19);
+                synthTokenHist[binIndex]++;
+            });
+            
+            // Create histogram for tokens
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: tokenBins.map(bin => `${bin}-${bin+25}`),
+                    datasets: [
+                        {
+                            label: 'Original Posts',
+                            data: origTokenHist,
+                            backgroundColor: 'rgba(53, 162, 235, 0.5)',
+                            borderColor: 'rgba(53, 162, 235, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Synthetic Posts',
+                            data: synthTokenHist,
+                            backgroundColor: 'rgba(233, 84, 32, 0.5)',
+                            borderColor: 'rgba(233, 84, 32, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Tokens per Post',
+                                color: '#E95420',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                color: '#FFF',
+                                callback: function(value, index) {
+                                    // Show fewer labels for readability
+                                    return index % 2 === 0 ? this.getLabelForValue(value) : '';
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(119, 41, 83, 0.3)'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Number of Posts',
+                                color: '#E95420',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                color: '#FFF'
+                            },
+                            grid: {
+                                color: 'rgba(119, 41, 83, 0.3)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#FFF'
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                title: function(tooltipItems) {
+                                    const item = tooltipItems[0];
+                                    const bin = tokenBins[item.dataIndex];
+                                    return `${bin}-${bin+25} tokens`;
+                                },
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.raw} posts`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Function to create the user count chart
+        function createUserCountChart(data) {
+            const ctx = document.getElementById('userCountChart').getContext('2d');
+            
+            // Hide loading indicator
+            document.getElementById('loading-user-count').style.display = 'none';
+            
+            // Create bar chart
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['1 user', '2 users', '3 users', '4 users', '5 users', '6+ users'],
+                    datasets: [
+                        {
+                            label: 'Original Conversations',
+                            data: data.orig_counts,
+                            backgroundColor: 'rgba(53, 162, 235, 0.5)',
+                            borderColor: 'rgba(53, 162, 235, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Synthetic Conversations',
+                            data: data.synth_counts,
+                            backgroundColor: 'rgba(233, 84, 32, 0.5)',
+                            borderColor: 'rgba(233, 84, 32, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Number of Unique Users per Conversation Thread',
+                                color: '#E95420',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                color: '#FFF'
+                            },
+                            grid: {
+                                color: 'rgba(119, 41, 83, 0.3)'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Number of Conversations',
+                                color: '#E95420',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                color: '#FFF'
+                            },
+                            grid: {
+                                color: 'rgba(119, 41, 83, 0.3)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#FFF'
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.raw} conversations`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Function to load and display the prompt file
+        async function loadPromptFile() {
+            try {
+                const response = await fetch('/prompt_file');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch prompt file');
+                }
+                
+                const promptText = await response.text();
+                document.getElementById('prompt-content').textContent = promptText;
+                document.getElementById('loading-prompt').style.display = 'none';
+            } catch (error) {
+                console.error('Error loading prompt file:', error);
+                document.getElementById('prompt-content').textContent = 'Error loading prompt file: ' + error.message;
+                document.getElementById('loading-prompt').style.display = 'none';
+            }
+        }
+        
+        // Function to load and display the config file
+        async function loadConfigFile() {
+            try {
+                const response = await fetch('/config_file');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch config file');
+                }
+                
+                const configData = await response.json();
+                document.getElementById('config-content').textContent = JSON.stringify(configData, null, 2);
+                document.getElementById('loading-config').style.display = 'none';
+            } catch (error) {
+                console.error('Error loading config file:', error);
+                document.getElementById('config-content').textContent = 'Error loading config file: ' + error.message;
+                document.getElementById('loading-config').style.display = 'none';
+            }
+        }
+        
+        // Function to perform Kolmogorov-Smirnov test
+        function kolmogorovSmirnovTest(sample1, sample2) {
+            // Sort the samples
+            sample1 = sample1.slice().sort((a, b) => a - b);
+            sample2 = sample2.slice().sort((a, b) => a - b);
+            
+            // Create empirical CDFs
+            const n1 = sample1.length;
+            const n2 = sample2.length;
+            
+            // Combine samples for comparison
+            const combined = [...sample1, ...sample2].sort((a, b) => a - b);
+            const uniqueValues = [...new Set(combined)];
+            
+            // Calculate maximum difference
+            let maxDiff = 0;
+            
+            for (const value of uniqueValues) {
+                // Count values less than or equal to current value
+                const count1 = sample1.filter(x => x <= value).length;
+                const count2 = sample2.filter(x => x <= value).length;
+                
+                // Calculate empirical CDFs
+                const cdf1 = count1 / n1;
+                const cdf2 = count2 / n2;
+                
+                // Update maximum difference
+                const diff = Math.abs(cdf1 - cdf2);
+                if (diff > maxDiff) {
+                    maxDiff = diff;
+                }
+            }
+            
+            // Calculate critical value (approximate for large samples)
+            const criticalValue = 1.36 * Math.sqrt((n1 + n2) / (n1 * n2));
+            
+            return {
+                statistic: maxDiff,
+                criticalValue: criticalValue,
+                significant: maxDiff > criticalValue
+            };
+        }
+        
+        // Function to perform Chi-Square test
+        function chiSquareTest(observed1, observed2) {
+            // Ensure both arrays have the same length (same number of bins)
+            if (observed1.length !== observed2.length) {
+                throw new Error("Both distributions must have the same number of bins");
+            }
+            
+            // Calculate total observations
+            const total1 = observed1.reduce((sum, val) => sum + val, 0);
+            const total2 = observed2.reduce((sum, val) => sum + val, 0);
+            
+            // Calculate chi-square statistic
+            let chiSquare = 0;
+            const degreesOfFreedom = observed1.length - 1;
+            
+            for (let i = 0; i < observed1.length; i++) {
+                // Skip bins with zero observations in both distributions
+                if (observed1[i] === 0 && observed2[i] === 0) continue;
+                
+                // Calculate expected values (proportional to totals)
+                const expected1 = (observed1[i] + observed2[i]) * (total1 / (total1 + total2));
+                const expected2 = (observed1[i] + observed2[i]) * (total2 / (total1 + total2));
+                
+                // Add to chi-square statistic if expected values are non-zero
+                if (expected1 > 0) {
+                    chiSquare += Math.pow(observed1[i] - expected1, 2) / expected1;
+                }
+                if (expected2 > 0) {
+                    chiSquare += Math.pow(observed2[i] - expected2, 2) / expected2;
+                }
+            }
+            
+            // Critical value for 95% confidence (would need a lookup table for exact values)
+            // This is an approximation
+            const criticalValue = degreesOfFreedom + Math.sqrt(2 * degreesOfFreedom);
+            
+            return {
+                statistic: chiSquare,
+                degreesOfFreedom: degreesOfFreedom,
+                criticalValue: criticalValue,
+                significant: chiSquare > criticalValue
+            };
+        }
+        
+        // Function to perform Mann-Whitney U test
+        function mannWhitneyUTest(sample1, sample2) {
+            // Combine samples and assign ranks
+            const combined = [...sample1.map(x => ({value: x, group: 1})), 
+                              ...sample2.map(x => ({value: x, group: 2}))];
+            
+            // Sort by value
+            combined.sort((a, b) => a.value - b.value);
+            
+            // Assign ranks (handling ties)
+            let currentRank = 1;
+            for (let i = 0; i < combined.length; i++) {
+                let j = i;
+                // Find ties
+                while (j < combined.length - 1 && combined[j].value === combined[j + 1].value) {
+                    j++;
+                }
+                
+                // Assign average rank for ties
+                const averageRank = currentRank + (j - i) / 2;
+                for (let k = i; k <= j; k++) {
+                    combined[k].rank = averageRank;
+                }
+                
+                currentRank = j + 2;
+                i = j;
+            }
+            
+            // Calculate rank sums
+            const n1 = sample1.length;
+            const n2 = sample2.length;
+            
+            const rankSum1 = combined.filter(x => x.group === 1).reduce((sum, x) => sum + x.rank, 0);
+            
+            // Calculate U statistic
+            const u1 = rankSum1 - (n1 * (n1 + 1)) / 2;
+            const u2 = n1 * n2 - u1;
+            
+            // Use smaller U value
+            const u = Math.min(u1, u2);
+            
+            // Calculate mean and standard deviation of U
+            const meanU = n1 * n2 / 2;
+            const stdU = Math.sqrt((n1 * n2 * (n1 + n2 + 1)) / 12);
+            
+            // Calculate z-score for normal approximation
+            const z = (u - meanU) / stdU;
+            
+            return {
+                u: u,
+                z: z,
+                significant: Math.abs(z) > 1.96 // 95% confidence
+            };
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchDatasetStats();
+            loadPromptFile();
+            loadConfigFile();
+        });
+    </script>
+</body>
+</html> 

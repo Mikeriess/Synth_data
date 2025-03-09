@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Annotations Overview</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: #2C001E;
+            color: #E95420;
+        }
+        .header {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header a {
+            color: #E95420;
+            text-decoration: none;
+            padding: 8px 15px;
+            border: 1px solid #772953;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        .header a:hover {
+            background-color: #772953;
+            color: white;
+        }
+        .annotations-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .annotations-table th, .annotations-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #772953;
+        }
+        .annotations-table th {
+            background-color: #410D38;
+            color: #FFF;
+        }
+        .conversation-link {
+            color: #E95420;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .conversation-link:hover {
+            text-decoration: underline;
+        }
+        .annotations-table tr:hover {
+            background-color: #2C001E;
+        }
+        .rating-cell {
+            text-align: center;
+        }
+        .flags-cell {
+            white-space: nowrap;
+            color: #E95420;
+        }
+        .notes-cell {
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .notes-cell:hover {
+            white-space: normal;
+            background-color: #2C001E;
+            position: relative;
+            z-index: 1;
+        }
+        .stats {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #410D38;
+            border: 1px solid #772953;
+            border-radius: 5px;
+            color: #FFF;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-top: 10px;
+        }
+        .stat-item {
+            padding: 10px;
+            background-color: #2C001E;
+            border-radius: 5px;
+            border: 1px solid #772953;
+        }
+        .flag-stats {
+            margin-top: 20px;
+        }
+        .header-buttons {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        .annotator-field {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .annotator-field label {
+            color: #FFF;
+        }
+        .annotator-field input {
+            padding: 8px;
+            background-color: #2C001E;
+            color: #FFF;
+            border: 1px solid #772953;
+            border-radius: 5px;
+            width: 200px;
+        }
+        .annotator-field input:focus {
+            outline: none;
+            border-color: #E95420;
+        }
+        .export-btn {
+            padding: 8px 15px;
+            background-color: #E95420;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .export-btn:hover {
+            background-color: #772953;
+        }
+        .dataset-info {
+            margin-bottom: 15px;
+            font-size: 16px;
+            color: #E95420;
+        }
+        .view-link {
+            color: #E95420;
+            text-decoration: none;
+        }
+        .view-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Annotations Overview</h1>
+        <div class="header-buttons">
+            <div class="annotator-field">
+                <label for="annotator-name">Annotator:</label>
+                <input type="text" id="annotator-name" placeholder="Enter your name">
+            </div>
+            <button onclick="exportToExcel()" class="export-btn">Export to Excel</button>
+            <a href="index.html">Back to Inspector</a>
+        </div>
+    </div>
+
+    <div id="dataset-info" class="dataset-info"></div>
+
+    <div class="stats">
+        <h2>Statistics</h2>
+        <div id="annotation-count" class="annotation-count">0 annotations</div>
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div>📊 Total Annotations: <span id="total-count">0</span></div>
+            </div>
+            <div class="stat-item">
+                <div>🇩🇰 Language Quality: <span id="avg-language">0.00</span></div>
+            </div>
+            <div class="stat-item">
+                <div>🤥 Factuality: <span id="avg-factuality">0.00</span></div>
+            </div>
+            <div class="stat-item">
+                <div>🧠 Knowledge Value: <span id="avg-knowledge">0.00</span></div>
+            </div>
+            <div class="stat-item">
+                <div>🎯 Similar to OP: <span id="avg-similarity">0.00</span></div>
+            </div>
+        </div>
+        <div class="flag-stats">
+            <h3>Flags</h3>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div>❓ Not Q&A: <span id="not-qa-count">0</span></div>
+                </div>
+                <div class="stat-item">
+                    <div>⚠️ Invalid Generation: <span id="invalid-gen-count">0</span></div>
+                </div>
+                <div class="stat-item">
+                    <div>🔍 Incomplete Original: <span id="incomplete-orig-count">0</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <table class="annotations-table">
+        <thead>
+            <tr>
+                <th>Conversation ID</th>
+                <th>Timestamp</th>
+                <th>Language</th>
+                <th>Factuality</th>
+                <th>Knowledge</th>
+                <th>Similarity</th>
+                <th>Not Q&A</th>
+                <th>Invalid Gen</th>
+                <th>Incomplete Orig</th>
+                <th>Notes</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="annotations-table-body">
+            <!-- Annotations will be inserted here -->
+        </tbody>
+    </table>
+
+    <script>
+        // Helper functions for displaying ratings and flags
+        function getRatingDisplay(rating) {
+            if (!rating) return '-';
+            return `${rating}/5`;
+        }
+        
+        function getFlagDisplay(flag) {
+            return flag ? '✓' : '-';
+        }
+        
+        async function loadAnnotations() {
+            try {
+                // First, load the current dataset info
+                let currentDataset = {};
+                try {
+                    const datasetResponse = await fetch('current_dataset.json');
+                    currentDataset = await datasetResponse.json();
+                } catch (e) {
+                    console.warn("Could not load current dataset info:", e);
+                }
+                
+                // Load annotations from the current dataset
+                const response = await fetch('annotations.json');
+                const annotations = await response.json();
+                
+                // Update the dataset info display
+                const datasetInfo = document.getElementById('dataset-info');
+                if (datasetInfo && currentDataset.dataset_id) {
+                    datasetInfo.textContent = `Dataset: ${currentDataset.dataset_id} (${annotations.length} annotations)`;
+                }
+                
+                // Clear existing table
+                const tableBody = document.getElementById('annotations-table-body');
+                tableBody.innerHTML = '';
+                
+                // Sort annotations by timestamp (newest first)
+                annotations.sort((a, b) => {
+                    return new Date(b.timestamp || 0) - new Date(a.timestamp || 0);
+                });
+                
+                // Add each annotation to the table
+                annotations.forEach(annotation => {
+                    const row = document.createElement('tr');
+                    
+                    // Format the timestamp
+                    const timestamp = annotation.timestamp ? new Date(annotation.timestamp).toLocaleString() : 'N/A';
+                    
+                    // Create the row cells
+                    row.innerHTML = `
+                        <td>${annotation.conversation_id || 'N/A'}</td>
+                        <td>${timestamp}</td>
+                        <td>${getRatingDisplay(annotation.language)}</td>
+                        <td>${getRatingDisplay(annotation.factuality)}</td>
+                        <td>${getRatingDisplay(annotation.knowledge)}</td>
+                        <td>${getRatingDisplay(annotation.similarity)}</td>
+                        <td>${getFlagDisplay(annotation.not_qa)}</td>
+                        <td>${getFlagDisplay(annotation.invalid_gen)}</td>
+                        <td>${getFlagDisplay(annotation.incomplete_orig)}</td>
+                        <td class="notes-cell">${annotation.notes || ''}</td>
+                        <td>
+                            <a href="index.html?id=${annotation.conversation_id}" class="view-link">View</a>
+                        </td>
+                    `;
+                    
+                    tableBody.appendChild(row);
+                });
+                
+                // Update the count and statistics
+                document.getElementById('annotation-count').textContent = `${annotations.length} annotations`;
+                updateStats(annotations);
+                
+            } catch (error) {
+                console.error('Error loading annotations:', error);
+                document.getElementById('annotation-count').textContent = 'Error loading annotations';
+            }
+        }
+
+        function updateStats(annotations) {
+            const total = annotations.length;
+            document.getElementById('total-count').textContent = total;
+
+            if (total > 0) {
+                const avgLanguage = average(annotations.map(a => parseInt(a.language)).filter(Boolean));
+                const avgFactuality = average(annotations.map(a => parseInt(a.factuality)).filter(Boolean));
+                const avgKnowledge = average(annotations.map(a => parseInt(a.knowledge)).filter(Boolean));
+                const avgSimilarity = average(annotations.map(a => parseInt(a.similarity)).filter(Boolean));
+
+                document.getElementById('avg-language').textContent = avgLanguage.toFixed(2);
+                document.getElementById('avg-factuality').textContent = avgFactuality.toFixed(2);
+                document.getElementById('avg-knowledge').textContent = avgKnowledge.toFixed(2);
+                document.getElementById('avg-similarity').textContent = avgSimilarity.toFixed(2);
+
+                document.getElementById('not-qa-count').textContent = 
+                    annotations.filter(a => a.not_qa).length;
+                document.getElementById('invalid-gen-count').textContent = 
+                    annotations.filter(a => a.invalid_gen).length;
+                document.getElementById('incomplete-orig-count').textContent = 
+                    annotations.filter(a => a.incomplete_orig).length;
+            }
+        }
+
+        function average(arr) {
+            return arr.length ? arr.reduce((a, b) => a + b) / arr.length : 0;
+        }
+
+        async function exportToExcel() {
+            try {
+                const annotator = document.getElementById('annotator-name').value || 'Anonymous';
+                
+                const response = await fetch('/export_excel', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ annotator })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to export Excel file');
+                }
+                
+                // Create a blob from the response
+                const blob = await response.blob();
+                
+                // Create a download link and trigger it
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = 'annotations.xlsx';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                
+            } catch (error) {
+                console.error('Error exporting to Excel:', error);
+                alert('Failed to export Excel file: ' + error.message);
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAnnotations();
+            
+            // Load saved annotator name from localStorage
+            const savedAnnotator = localStorage.getItem('annotator_name');
+            if (savedAnnotator) {
+                document.getElementById('annotator-name').value = savedAnnotator;
+            }
+            
+            document.getElementById('annotator-name').addEventListener('change', (e) => {
+                localStorage.setItem('annotator_name', e.target.value);
+            });
+        });
+    </script>
+</body>
+</html>

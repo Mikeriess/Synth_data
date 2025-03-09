@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dataset Selection - Conversation Inspector</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #2C001E;
+            color: #E95420;
+        }
+        h1, h2 {
+            color: #E95420;
+            border-bottom: 2px solid #772953;
+            padding-bottom: 10px;
+        }
+        .form-container {
+            background-color: #410D38;
+            padding: 20px;
+            border-radius: 5px;
+            margin-top: 20px;
+            border: 1px solid #772953;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #FFF;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #772953;
+            border-radius: 4px;
+            background-color: #2C001E;
+            color: #FFF;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #E95420;
+        }
+        button {
+            background-color: #E95420;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #772953;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+            color: #FFF;
+        }
+        .spinner {
+            border: 4px solid #772953;
+            border-top: 4px solid #E95420;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 2s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .examples {
+            margin-top: 30px;
+            background-color: #410D38;
+            padding: 20px;
+            border-radius: 5px;
+            border: 1px solid #772953;
+        }
+        .example-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #2C001E;
+            border-radius: 5px;
+            border: 1px solid #772953;
+        }
+        .example-item h3 {
+            margin-top: 0;
+            color: #E95420;
+        }
+        .example-item p {
+            margin: 5px 0;
+            color: #FFF;
+        }
+        .example-item code {
+            background-color: #000;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        .existing-datasets {
+            margin-top: 30px;
+            background-color: #410D38;
+            padding: 20px;
+            border-radius: 5px;
+            border: 1px solid #772953;
+        }
+        
+        .dataset-list {
+            margin-top: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .dataset-item {
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #2C001E;
+            border: 1px solid #772953;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .dataset-item:hover {
+            border-color: #E95420;
+        }
+        
+        .dataset-info {
+            flex: 1;
+        }
+        
+        .dataset-name {
+            font-weight: bold;
+            color: #E95420;
+            margin-bottom: 5px;
+        }
+        
+        .dataset-meta {
+            font-size: 0.9em;
+            color: #CCC;
+        }
+        
+        .dataset-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .load-btn {
+            background-color: #E95420;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        
+        .load-btn:hover {
+            background-color: #772953;
+        }
+        
+        .no-datasets {
+            color: #CCC;
+            font-style: italic;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Dataset Selection</h1>
+    <p>Select a Hugging Face dataset to download and process for annotation.</p>
+    
+    <div class="form-container">
+        <h2>Download New Dataset</h2>
+        <form id="datasetForm" action="/process_dataset" method="post">
+            <div class="form-group">
+                <label for="dataset_id">Dataset ID:</label>
+                <input type="text" id="dataset_id" name="dataset_id" required placeholder="e.g., mikeriess/LM_dialogues1">
+            </div>
+            
+            <div class="form-group">
+                <label for="config">Configuration (optional):</label>
+                <input type="text" id="config" name="config" placeholder="e.g., squad_v2, cola, etc.">
+            </div>
+            
+            <div class="form-group">
+                <label for="split">Split:</label>
+                <select id="split" name="split">
+                    <option value="train">train</option>
+                    <option value="validation">validation</option>
+                    <option value="test">test</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="max_samples">Maximum Samples (optional):</label>
+                <input type="number" id="max_samples" name="max_samples" placeholder="Leave empty for all samples">
+            </div>
+            
+            <button type="submit">Process Dataset</button>
+        </form>
+    </div>
+    
+    <div class="existing-datasets">
+        <h2>Existing Datasets</h2>
+        <p>Select a previously processed dataset to continue working with it.</p>
+        
+        <div id="dataset-list" class="dataset-list">
+            <div class="no-datasets">Loading datasets...</div>
+        </div>
+    </div>
+    
+    <div id="loading" class="loading">
+        <p>Processing dataset. This may take a few minutes...</p>
+        <div class="spinner"></div>
+    </div>
+    
+    <div class="examples">
+        <h2>Example Datasets</h2>
+        
+        <div class="example-item">
+            <h3>Dialogue Dataset</h3>
+            <p><strong>Dataset ID:</strong> <code>mikeriess/LM_dialogues1</code></p>
+            <p><strong>Description:</strong> Contains original and synthetic conversations for comparison.</p>
+        </div>
+        
+        <div class="example-item">
+            <h3>Multi-turn Conversations</h3>
+            <p><strong>Dataset ID:</strong> <code>knkarthick/dialogsum</code></p>
+            <p><strong>Description:</strong> Dialogue summarization dataset with conversations and summaries.</p>
+        </div>
+        
+        <div class="example-item">
+            <h3>Question Answering</h3>
+            <p><strong>Dataset ID:</strong> <code>squad</code></p>
+            <p><strong>Configuration:</strong> <code>plain_text</code></p>
+            <p><strong>Description:</strong> Stanford Question Answering Dataset with questions and answers.</p>
+        </div>
+    </div>
+    
+    <script>
+        // Load existing datasets
+        async function loadExistingDatasets() {
+            try {
+                const response = await fetch('/list_datasets');
+                const datasets = await response.json();
+                
+                const datasetList = document.getElementById('dataset-list');
+                
+                if (datasets.length === 0) {
+                    datasetList.innerHTML = '<div class="no-datasets">No existing datasets found.</div>';
+                    return;
+                }
+                
+                datasetList.innerHTML = '';
+                
+                datasets.forEach(dataset => {
+                    const datasetItem = document.createElement('div');
+                    datasetItem.className = 'dataset-item';
+                    
+                    // Format the timestamp for display
+                    const timestamp = dataset.timestamp || dataset.folder.split('/').pop();
+                    const formattedDate = formatTimestamp(timestamp);
+                    
+                    // Get annotation count if available
+                    const annotationCount = dataset.annotation_count || 0;
+                    
+                    datasetItem.innerHTML = `
+                        <div class="dataset-info">
+                            <div class="dataset-name">${dataset.dataset_id || 'Unknown Dataset'}</div>
+                            <div class="dataset-meta">
+                                Created: ${formattedDate} | 
+                                Split: ${dataset.split || 'unknown'} | 
+                                Annotations: ${annotationCount}
+                            </div>
+                        </div>
+                        <div class="dataset-actions">
+                            <button class="load-btn" onclick="loadDataset('${dataset.folder}')">Load</button>
+                        </div>
+                    `;
+                    
+                    datasetList.appendChild(datasetItem);
+                });
+                
+            } catch (error) {
+                console.error('Error loading existing datasets:', error);
+                document.getElementById('dataset-list').innerHTML = 
+                    '<div class="no-datasets">Error loading datasets. Please try again.</div>';
+            }
+        }
+        
+        // Format timestamp for display
+        function formatTimestamp(timestamp) {
+            if (!timestamp) return 'Unknown date';
+            
+            // If it's already a formatted date string like "20250309_171450"
+            if (typeof timestamp === 'string' && timestamp.includes('_')) {
+                const [date, time] = timestamp.split('_');
+                const year = date.substring(0, 4);
+                const month = date.substring(4, 6);
+                const day = date.substring(6, 8);
+                
+                const hours = time.substring(0, 2);
+                const minutes = time.substring(2, 4);
+                
+                return `${year}-${month}-${day} ${hours}:${minutes}`;
+            }
+            
+            // If it's a standard date string
+            return new Date(timestamp).toLocaleString();
+        }
+        
+        // Load a specific dataset
+        function loadDataset(folderPath) {
+            window.location.href = `/load_dataset?folder=${encodeURIComponent(folderPath)}`;
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadExistingDatasets();
+            
+            document.getElementById('datasetForm').addEventListener('submit', function() {
+                document.getElementById('loading').style.display = 'block';
+            });
+        });
+    </script>
+</body>
+</html> 
