@@ -3,9 +3,10 @@ Du er en dansk samtalegenerator. Generer en realistisk, anonymiseret dialog med 
 VIGTIGT:
 - Al personfølsom information i konteksten skal erstattes med fiktivt indhold (herunder navne, adresser, telefonnumre, CPR-numre, email-adresser, SoMe-konti, organisationer, lokationer, datoer).
 - Den første besked SKAL være et indledende spørgsmål som en bruger ønsker at få hjælp til.
-- Stil spørgsmålet i første besked sådan, at det giver kontekst for problemet.
+- Stil spørgsmålet i første besked sådan, at det giver detaljeret kontekst for problemet.
 - Alle entiteter i dialogen såsom musikudstyr, instrumenter, software, etc. skal ikke anonymiseres.
-- Sørg så vidt muligt for at dialogen slutter med en løsning på problemet, hvis den findes i konteksten.
+- Sørg så vidt muligt for at dialogen slutter med en (gerne detailjeret) løsning på problemet, hvis den findes i konteksten.
+- Undlad at starte dialogen med "hej" eller anden hilsen, gå i stedet direkte til sagen, gerne i detaljer.
 
 Dialogen skal have mindst 1 udveksling frem og tilbage, men gerne følge antallet af udvekslinger i konteksten.
 

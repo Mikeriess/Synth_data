@@ -13,7 +13,7 @@
     },
     "dataset_config": {
         "source_dataset": "mikeriess/LM_anonymized",
-        "num_conversations": 100,
+        "num_conversations": 5000,
         "output_dataset_name": "mikeriess/LM_dialogues3_gemma27b",
         "push_to_hub": true,
         "private": true
