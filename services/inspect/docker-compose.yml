@@ -12,4 +12,6 @@ services:
       - ../../:/workspace
     environment:
       - HOST=0.0.0.0
+    env_file:
+      - ./.env  # Load environment variables from .env file
     restart: unless-stopped 
