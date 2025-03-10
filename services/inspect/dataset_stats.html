@@ -148,55 +148,76 @@
 
     <div id="dataset-info" class="dataset-info">Loading dataset information...</div>
 
+    <div class="chart-section">
+        <h2 class="chart-title">Context Statistics</h2>
+        <p class="chart-description">Statistics about the context used for generation</p>
+        
+        <div class="stats-container">
+            <div class="stats-card">
+                <h3>Messages Used</h3>
+                <div id="messages-used-stats">Loading...</div>
+            </div>
+            <div class="stats-card">
+                <h3>Token Usage</h3>
+                <div id="token-usage-stats">Loading...</div>
+            </div>
+        </div>
+        
+        <div class="chart-container">
+            <canvas id="context-stats-chart"></canvas>
+        </div>
+    </div>
+
     <div class="stats-container">
         <div class="stats-card">
-            <h3>Message Counts</h3>
-            <table class="stats-table">
+            <h2 class="chart-title">Post Count Statistics</h2>
+            <table id="message-stats">
                 <tr>
-                    <th></th>
+                    <th>Metric</th>
                     <th>Original</th>
                     <th>Synthetic</th>
                 </tr>
                 <tr>
-                    <td>Average</td>
+                    <td>Average Posts/Thread</td>
                     <td id="orig-msg-avg">-</td>
                     <td id="synth-msg-avg">-</td>
                 </tr>
                 <tr>
-                    <td>Median</td>
+                    <td>Median Posts/Thread</td>
                     <td id="orig-msg-median">-</td>
                     <td id="synth-msg-median">-</td>
                 </tr>
                 <tr>
-                    <td>Min</td>
+                    <td>Min Posts</td>
                     <td id="orig-msg-min">-</td>
                     <td id="synth-msg-min">-</td>
                 </tr>
                 <tr>
-                    <td>Max</td>
+                    <td>Max Posts</td>
                     <td id="orig-msg-max">-</td>
                     <td id="synth-msg-max">-</td>
                 </tr>
                 <tr>
-                    <td colspan="3">Correlation: <span id="msg-correlation">-</span></td>
+                    <td>Correlation</td>
+                    <td colspan="2" id="msg-correlation">-</td>
                 </tr>
             </table>
         </div>
         <div class="stats-card">
-            <h3>Message Length</h3>
-            <table class="stats-table">
+            <h2 class="chart-title">Character Statistics</h2>
+            <table id="char-stats">
                 <tr>
-                    <th></th>
+                    <th>Metric</th>
                     <th>Original</th>
                     <th>Synthetic</th>
                 </tr>
                 <tr>
-                    <td>Avg Words</td>
+                    <td>Avg Words/Post</td>
                     <td id="orig-words-avg">-</td>
                     <td id="synth-words-avg">-</td>
                 </tr>
                 <tr>
-                    <td>Avg Chars</td>
+                    <td>Avg Chars/Post</td>
                     <td id="orig-chars-avg">-</td>
                     <td id="synth-chars-avg">-</td>
                 </tr>
@@ -213,9 +234,67 @@
             </table>
         </div>
         <div class="stats-card">
-            <h3>Context Statistics</h3>
-            <div id="messages-used-stats">Loading...</div>
-            <div id="token-usage-stats">Loading...</div>
+            <h2 class="chart-title">Token Statistics</h2>
+            <table id="token-stats">
+                <tr>
+                    <th>Metric</th>
+                    <th>Original</th>
+                    <th>Synthetic</th>
+                </tr>
+                <tr>
+                    <td>Avg Tokens/Post</td>
+                    <td id="orig-tokens-avg">-</td>
+                    <td id="synth-tokens-avg">-</td>
+                </tr>
+                <tr>
+                    <td>Median Tokens/Post</td>
+                    <td id="orig-tokens-median">-</td>
+                    <td id="synth-tokens-median">-</td>
+                </tr>
+                <tr>
+                    <td>Total Tokens</td>
+                    <td id="orig-tokens-total">-</td>
+                    <td id="synth-tokens-total">-</td>
+                </tr>
+                <tr>
+                    <td>Total Token Ratio (Synth/Orig)</td>
+                    <td colspan="2" id="token-ratio">-</td>
+                </tr>
+            </table>
+        </div>
+        <div class="stats-card">
+            <h2 class="chart-title">Distribution Comparison Tests</h2>
+            <table id="stat-tests">
+                <tr>
+                    <th>Metric</th>
+                    <th>Test</th>
+                    <th>Result</th>
+                    <th>Significant?</th>
+                </tr>
+                <tr>
+                    <td rowspan="2">Post Counts</td>
+                    <td>Kolmogorov-Smirnov</td>
+                    <td id="ks-message-result">-</td>
+                    <td id="ks-message-sig">-</td>
+                </tr>
+                <tr>
+                    <td>Mann-Whitney U</td>
+                    <td id="mw-message-result">-</td>
+                    <td id="mw-message-sig">-</td>
+                </tr>
+                <tr>
+                    <td>Character Counts</td>
+                    <td>Kolmogorov-Smirnov</td>
+                    <td id="ks-char-result">-</td>
+                    <td id="ks-char-sig">-</td>
+                </tr>
+                <tr>
+                    <td>Length Distribution</td>
+                    <td>Chi-Square</td>
+                    <td id="chi-length-result">-</td>
+                    <td id="chi-length-sig">-</td>
+                </tr>
+            </table>
         </div>
     </div>
 
@@ -288,14 +367,6 @@
                 <div>Loading prompt...</div>
             </div>
             <pre id="prompt-content" class="prompt-text"></pre>
-        </div>
-    </div>
-
-    <div class="chart-section">
-        <h2 class="chart-title">Context Usage Distribution</h2>
-        <p class="chart-description">Distribution of message usage ratio (messages used / total messages)</p>
-        <div class="chart-container">
-            <canvas id="context-stats-chart"></canvas>
         </div>
     </div>
 
