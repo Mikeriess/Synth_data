@@ -566,23 +566,40 @@
             }
         }
         
-        // Function to create the message count chart
-        function createMessageCountChart(data) {
+        // Function to create charts based on dataset statistics
+        function createCharts(stats) {
+            // Create message count scatter plot
+            createMessageCountScatter(stats.message_counts.scatter_data);
+            
+            // Create message length histograms
+            createMessageLengthHistograms(stats.message_lengths);
+            
+            // Create token distribution chart
+            createTokenDistChart(stats.message_lengths);
+            
+            // Create user count chart
+            createUserCountChart(stats.user_counts);
+            
+            // Create context stats chart if available
+            if (stats.context_stats && stats.context_stats.messages_used && stats.context_stats.messages_used.length > 0) {
+                createContextStatsChart(stats.context_stats);
+            }
+        }
+        
+        // Function to create message count scatter plot
+        function createMessageCountScatter(scatterData) {
             const ctx = document.getElementById('messageCountChart').getContext('2d');
             
             // Hide loading indicator
             document.getElementById('loading-msg-count').style.display = 'none';
             
-            // Create scatter plot
             new Chart(ctx, {
                 type: 'scatter',
                 data: {
                     datasets: [{
                         label: 'Conversations',
-                        data: data.scatter_data,
-                        backgroundColor: 'rgba(233, 84, 32, 0.6)',
-                        borderColor: 'rgba(233, 84, 32, 1)',
-                        borderWidth: 1,
+                        data: scatterData,
+                        backgroundColor: '#E95420',
                         pointRadius: 5,
                         pointHoverRadius: 7
                     }]
@@ -590,53 +607,51 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Original vs. Synthetic Post Counts',
+                            color: '#FFF'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const point = context.raw;
+                                    return `Conversation ID: ${point.id}, Original: ${point.x}, Synthetic: ${point.y}`;
+                                }
+                            }
+                        },
+                        legend: {
+                            labels: {
+                                color: '#FFF'
+                            }
+                        }
+                    },
                     scales: {
                         x: {
                             title: {
                                 display: true,
-                                text: 'Number of Posts in Original Conversation',
-                                color: '#E95420',
-                                font: {
-                                    size: 14,
-                                    weight: 'bold'
-                                }
+                                text: 'Original Post Count',
+                                color: '#FFF'
                             },
                             ticks: {
                                 color: '#FFF'
                             },
                             grid: {
-                                color: 'rgba(119, 41, 83, 0.3)'
+                                color: '#772953'
                             }
                         },
                         y: {
                             title: {
                                 display: true,
-                                text: 'Number of Posts in Synthetic Conversation',
-                                color: '#E95420',
-                                font: {
-                                    size: 14,
-                                    weight: 'bold'
-                                }
+                                text: 'Synthetic Post Count',
+                                color: '#FFF'
                             },
                             ticks: {
                                 color: '#FFF'
                             },
                             grid: {
-                                color: 'rgba(119, 41, 83, 0.3)'
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            labels: {
-                                color: '#FFF'
-                            }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return `Conversation ID: ${context.raw.id}, Original: ${context.raw.x} posts, Synthetic: ${context.raw.y} posts`;
-                                }
+                                color: '#772953'
                             }
                         }
                     }
@@ -644,94 +659,75 @@
             });
         }
         
-        // Function to create the message length chart
-        function createMessageLengthChart(data) {
-            const ctx = document.getElementById('messageLengthChart').getContext('2d');
-            
+        // Function to create message length histograms
+        function createMessageLengthHistograms(lengthData) {
             // Hide loading indicator
             document.getElementById('loading-msg-length').style.display = 'none';
             
-            // Create histogram
-            new Chart(ctx, {
+            // Create histograms for character lengths
+            const charLengths = {
+                orig: lengthData.orig_lengths,
+                synth: lengthData.synth_lengths
+            };
+            
+            const charCtx = document.getElementById('messageLengthChart').getContext('2d');
+            new Chart(charCtx, {
                 type: 'bar',
                 data: {
-                    labels: data.bins.map(bin => `${bin}-${bin+50}`),
+                    labels: ['0-50', '51-100', '101-200', '201-300', '301-500', '501-1000', '1000+'],
                     datasets: [
                         {
                             label: 'Original Posts',
-                            data: data.orig_hist,
-                            backgroundColor: 'rgba(53, 162, 235, 0.5)',
-                            borderColor: 'rgba(53, 162, 235, 1)',
-                            borderWidth: 1
+                            data: createHistogram(charLengths.orig, [0, 50, 100, 200, 300, 500, 1000, Infinity]),
+                            backgroundColor: '#E95420'
                         },
                         {
                             label: 'Synthetic Posts',
-                            data: data.synth_hist,
-                            backgroundColor: 'rgba(233, 84, 32, 0.5)',
-                            borderColor: 'rgba(233, 84, 32, 1)',
-                            borderWidth: 1
+                            data: createHistogram(charLengths.synth, [0, 50, 100, 200, 300, 500, 1000, Infinity]),
+                            backgroundColor: '#77216F'
                         }
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Message Length Distribution (Characters)',
+                            color: '#FFF'
+                        },
+                        legend: {
+                            labels: {
+                                color: '#FFF'
+                            }
+                        }
+                    },
                     scales: {
                         x: {
                             title: {
                                 display: true,
-                                text: 'Characters per Post',
-                                color: '#E95420',
-                                font: {
-                                    size: 14,
-                                    weight: 'bold'
-                                }
+                                text: 'Character Count',
+                                color: '#FFF'
                             },
                             ticks: {
-                                color: '#FFF',
-                                callback: function(value, index) {
-                                    // Show fewer labels for readability
-                                    return index % 4 === 0 ? this.getLabelForValue(value) : '';
-                                }
+                                color: '#FFF'
                             },
                             grid: {
-                                color: 'rgba(119, 41, 83, 0.3)'
+                                color: '#772953'
                             }
                         },
                         y: {
                             title: {
                                 display: true,
                                 text: 'Number of Posts',
-                                color: '#E95420',
-                                font: {
-                                    size: 14,
-                                    weight: 'bold'
-                                }
+                                color: '#FFF'
                             },
                             ticks: {
                                 color: '#FFF'
                             },
                             grid: {
-                                color: 'rgba(119, 41, 83, 0.3)'
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            labels: {
-                                color: '#FFF'
-                            }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                title: function(tooltipItems) {
-                                    const item = tooltipItems[0];
-                                    const bin = data.bins[item.dataIndex];
-                                    return `${bin}-${bin+50} characters`;
-                                },
-                                label: function(context) {
-                                    return `${context.dataset.label}: ${context.raw} posts`;
-                                }
+                                color: '#772953'
                             }
                         }
                     }
@@ -739,117 +735,75 @@
             });
         }
         
-        // Function to create the token distribution chart
-        function createTokenDistChart(data) {
-            const ctx = document.getElementById('tokenDistChart').getContext('2d');
-            
+        // Function to create token distribution chart
+        function createTokenDistChart(lengthData) {
             // Hide loading indicator
             document.getElementById('loading-token-dist').style.display = 'none';
             
-            // Create token bins (0-25, 25-50, etc.)
-            const tokenBins = Array.from({length: 20}, (_, i) => i * 25);
+            // Create histograms for word counts (approximation of tokens)
+            const wordCounts = {
+                orig: lengthData.orig_words,
+                synth: lengthData.synth_words
+            };
             
-            // Create histograms for tokens (estimated based on word counts)
-            // In a real implementation, you would use actual token counts from the server
-            const origTokenCounts = data.orig_words.map(count => Math.round(count * 1.3));
-            const synthTokenCounts = data.synth_words.map(count => Math.round(count * 1.3));
-            
-            // Create histograms
-            const origTokenHist = new Array(20).fill(0);
-            const synthTokenHist = new Array(20).fill(0);
-            
-            // Fill histograms
-            origTokenCounts.forEach(count => {
-                const binIndex = Math.min(Math.floor(count / 25), 19);
-                origTokenHist[binIndex]++;
-            });
-            
-            synthTokenCounts.forEach(count => {
-                const binIndex = Math.min(Math.floor(count / 25), 19);
-                synthTokenHist[binIndex]++;
-            });
-            
-            // Create histogram for tokens
-            new Chart(ctx, {
+            const tokenCtx = document.getElementById('tokenDistChart').getContext('2d');
+            new Chart(tokenCtx, {
                 type: 'bar',
                 data: {
-                    labels: tokenBins.map(bin => `${bin}-${bin+25}`),
+                    labels: ['0-10', '11-25', '26-50', '51-100', '101-200', '201-300', '300+'],
                     datasets: [
                         {
                             label: 'Original Posts',
-                            data: origTokenHist,
-                            backgroundColor: 'rgba(53, 162, 235, 0.5)',
-                            borderColor: 'rgba(53, 162, 235, 1)',
-                            borderWidth: 1
+                            data: createHistogram(wordCounts.orig, [0, 10, 25, 50, 100, 200, 300, Infinity]),
+                            backgroundColor: '#E95420'
                         },
                         {
                             label: 'Synthetic Posts',
-                            data: synthTokenHist,
-                            backgroundColor: 'rgba(233, 84, 32, 0.5)',
-                            borderColor: 'rgba(233, 84, 32, 1)',
-                            borderWidth: 1
+                            data: createHistogram(wordCounts.synth, [0, 10, 25, 50, 100, 200, 300, Infinity]),
+                            backgroundColor: '#77216F'
                         }
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Token Distribution (Word Count)',
+                            color: '#FFF'
+                        },
+                        legend: {
+                            labels: {
+                                color: '#FFF'
+                            }
+                        }
+                    },
                     scales: {
                         x: {
                             title: {
                                 display: true,
-                                text: 'Tokens per Post',
-                                color: '#E95420',
-                                font: {
-                                    size: 14,
-                                    weight: 'bold'
-                                }
+                                text: 'Word Count',
+                                color: '#FFF'
                             },
                             ticks: {
-                                color: '#FFF',
-                                callback: function(value, index) {
-                                    // Show fewer labels for readability
-                                    return index % 2 === 0 ? this.getLabelForValue(value) : '';
-                                }
+                                color: '#FFF'
                             },
                             grid: {
-                                color: 'rgba(119, 41, 83, 0.3)'
+                                color: '#772953'
                             }
                         },
                         y: {
                             title: {
                                 display: true,
                                 text: 'Number of Posts',
-                                color: '#E95420',
-                                font: {
-                                    size: 14,
-                                    weight: 'bold'
-                                }
+                                color: '#FFF'
                             },
                             ticks: {
                                 color: '#FFF'
                             },
                             grid: {
-                                color: 'rgba(119, 41, 83, 0.3)'
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            labels: {
-                                color: '#FFF'
-                            }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                title: function(tooltipItems) {
-                                    const item = tooltipItems[0];
-                                    const bin = tokenBins[item.dataIndex];
-                                    return `${bin}-${bin+25} tokens`;
-                                },
-                                label: function(context) {
-                                    return `${context.dataset.label}: ${context.raw} posts`;
-                                }
+                                color: '#772953'
                             }
                         }
                     }
@@ -857,90 +811,131 @@
             });
         }
         
-        // Function to create the user count chart
-        function createUserCountChart(data) {
-            const ctx = document.getElementById('userCountChart').getContext('2d');
-            
+        // Function to create user count chart
+        function createUserCountChart(userCounts) {
             // Hide loading indicator
             document.getElementById('loading-user-count').style.display = 'none';
             
-            // Create bar chart
-            new Chart(ctx, {
+            const userCtx = document.getElementById('userCountChart').getContext('2d');
+            new Chart(userCtx, {
                 type: 'bar',
                 data: {
-                    labels: ['1 user', '2 users', '3 users', '4 users', '5 users', '6+ users'],
+                    labels: ['1', '2', '3', '4', '5', '6+'],
                     datasets: [
                         {
                             label: 'Original Conversations',
-                            data: data.orig_counts,
-                            backgroundColor: 'rgba(53, 162, 235, 0.5)',
-                            borderColor: 'rgba(53, 162, 235, 1)',
-                            borderWidth: 1
+                            data: userCounts.orig_counts,
+                            backgroundColor: '#E95420'
                         },
                         {
                             label: 'Synthetic Conversations',
-                            data: data.synth_counts,
-                            backgroundColor: 'rgba(233, 84, 32, 0.5)',
-                            borderColor: 'rgba(233, 84, 32, 1)',
-                            borderWidth: 1
+                            data: userCounts.synth_counts,
+                            backgroundColor: '#77216F'
                         }
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Number of Unique Users per Conversation',
+                            color: '#FFF'
+                        },
+                        legend: {
+                            labels: {
+                                color: '#FFF'
+                            }
+                        }
+                    },
                     scales: {
                         x: {
                             title: {
                                 display: true,
-                                text: 'Number of Unique Users per Conversation Thread',
-                                color: '#E95420',
-                                font: {
-                                    size: 14,
-                                    weight: 'bold'
-                                }
+                                text: 'Number of Users',
+                                color: '#FFF'
                             },
                             ticks: {
                                 color: '#FFF'
                             },
                             grid: {
-                                color: 'rgba(119, 41, 83, 0.3)'
+                                color: '#772953'
                             }
                         },
                         y: {
                             title: {
                                 display: true,
                                 text: 'Number of Conversations',
-                                color: '#E95420',
-                                font: {
-                                    size: 14,
-                                    weight: 'bold'
-                                }
+                                color: '#FFF'
                             },
                             ticks: {
                                 color: '#FFF'
                             },
                             grid: {
-                                color: 'rgba(119, 41, 83, 0.3)'
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            labels: {
-                                color: '#FFF'
-                            }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return `${context.dataset.label}: ${context.raw} conversations`;
-                                }
+                                color: '#772953'
                             }
                         }
                     }
                 }
             });
+        }
+        
+        // Function to create context stats chart
+        function createContextStatsChart(contextStats) {
+            // Create histogram of messages used ratio
+            const messagesRatio = contextStats.messages_used.map((used, i) => 
+                used / contextStats.messages_total[i]
+            );
+            
+            const ctx = document.getElementById('context-stats-chart');
+            if (ctx) {
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['0-10%', '10-20%', '20-30%', '30-40%', '40-50%', '50-60%', '60-70%', '70-80%', '80-90%', '90-100%'],
+                        datasets: [{
+                            label: 'Message Usage Ratio Distribution',
+                            data: createHistogram(messagesRatio, 10),
+                            backgroundColor: '#E95420'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Distribution of Message Usage Ratio (Messages Used / Total Messages)',
+                                color: '#FFF'
+                            },
+                            legend: {
+                                labels: {
+                                    color: '#FFF'
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                ticks: {
+                                    color: '#FFF'
+                                },
+                                grid: {
+                                    color: '#772953'
+                                }
+                            },
+                            y: {
+                                ticks: {
+                                    color: '#FFF'
+                                },
+                                grid: {
+                                    color: '#772953'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
         }
         
         // Function to load and display the prompt file
@@ -1192,4 +1187,6 @@
         });
     </script>
 </body>
+</html> 
+</html> 
 </html> 
