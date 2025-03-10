@@ -686,11 +686,39 @@ class AnnotationHandler(SimpleHTTPRequestHandler):
             'synth_counts': synth_counts_binned
         })
         
+        # Add context statistics if available
+        context_stats = {
+            'messages_used': [],
+            'messages_total': [],
+            'tokens_used': [],
+            'max_tokens': []
+        }
+        
+        # Extract context statistics from metadata
+        for conv in conversations:
+            if 'metadata' in conv and 'context_stats' in conv['metadata']:
+                stats = conv['metadata']['context_stats']
+                context_stats['messages_used'].append(stats.get('messages_used', 0))
+                context_stats['messages_total'].append(stats.get('total_messages', 0))
+                context_stats['tokens_used'].append(stats.get('tokens_used', 0))
+                context_stats['max_tokens'].append(stats.get('max_tokens', 0))
+        
+        # Calculate averages if data exists
+        if context_stats['messages_used']:
+            context_stats['avg_messages_used'] = sum(context_stats['messages_used']) / len(context_stats['messages_used'])
+            context_stats['avg_messages_total'] = sum(context_stats['messages_total']) / len(context_stats['messages_total'])
+            context_stats['avg_tokens_used'] = sum(context_stats['tokens_used']) / len(context_stats['tokens_used'])
+            context_stats['avg_max_tokens'] = sum(context_stats['max_tokens']) / len(context_stats['max_tokens'])
+            context_stats['usage_ratio'] = context_stats['avg_messages_used'] / context_stats['avg_messages_total'] if context_stats['avg_messages_total'] > 0 else 0
+            context_stats['token_usage'] = context_stats['avg_tokens_used'] / context_stats['avg_max_tokens'] if context_stats['avg_max_tokens'] > 0 else 0
+        
         # Return all statistics
         return {
             'message_counts': message_counts,
             'message_lengths': message_lengths,
-            'user_counts': user_counts
+            'user_counts': user_counts,
+            'context_stats': context_stats,
+            'conversations': conversations  # Include full conversations for additional processing
         }
 
 def run(port=8000):
