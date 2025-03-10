@@ -341,7 +341,7 @@ def create_analysis_dataset(generated_dataset: dict, model_name: str) -> List[Di
     
     for conv_id, data in generated_dataset.items():
         # Extract original and synthetic messages
-        orig_messages = data['orig_messages']
+        orig_messages = data['original_messages']
         synthetic_messages = data['parsed_messages']
         
         # Calculate message counts
@@ -373,7 +373,7 @@ def create_analysis_dataset(generated_dataset: dict, model_name: str) -> List[Di
         analysis_entry = {
             'model': model_name,
             'conversation_id': conv_id,
-            'orig_messages': orig_messages,
+            'original_messages': orig_messages,
             'synthetic_messages': synthetic_messages,
             'orig_message_count': orig_message_count,
             'synthetic_message_count': synthetic_message_count,
