@@ -247,9 +247,9 @@
                     <td id="synth-tokens-total">-</td>
                 </tr>
                 <tr>
-                    <td>Median Tokens</td>
-                    <td id="orig-tokens-median">-</td>
-                    <td id="synth-tokens-median">-</td>
+                    <td>Max Tokens/Post</td>
+                    <td id="orig-tokens-max">-</td>
+                    <td id="synth-tokens-max">-</td>
                 </tr>
                 <tr>
                     <td>Total Tokens (Sum)</td>
@@ -555,21 +555,23 @@
             const synthTokensAvg = stats.message_lengths.synth_words_avg * 1.3;
             const origTokensTotal = Math.round(stats.message_lengths.orig_words_total * 1.3);
             const synthTokensTotal = Math.round(stats.message_lengths.synth_words_total * 1.3);
-            
-            // Estimate median tokens (using the same ratio as for average)
-            const origTokensMedian = stats.message_lengths.orig_words_avg * 1.3; // Using avg as an approximation
-            const synthTokensMedian = stats.message_lengths.synth_words_avg * 1.3; // Using avg as an approximation
-            
+
+            // Calculate max tokens (based on max words)
+            const origWordsArray = stats.message_lengths.orig_words;
+            const synthWordsArray = stats.message_lengths.synth_words;
+            const origTokensMax = Math.round(Math.max(...origWordsArray) * 1.3);
+            const synthTokensMax = Math.round(Math.max(...synthWordsArray) * 1.3);
+
             // Calculate sum of all tokens across all conversations
             const origTokensSum = origTokensTotal;
             const synthTokensSum = synthTokensTotal;
-            
+
             document.getElementById('orig-tokens-avg').textContent = origTokensAvg.toFixed(2);
             document.getElementById('synth-tokens-avg').textContent = synthTokensAvg.toFixed(2);
-            document.getElementById('orig-tokens-median').textContent = origTokensMedian.toFixed(2);
-            document.getElementById('synth-tokens-median').textContent = synthTokensMedian.toFixed(2);
             document.getElementById('orig-tokens-total').textContent = origTokensTotal.toLocaleString();
             document.getElementById('synth-tokens-total').textContent = synthTokensTotal.toLocaleString();
+            document.getElementById('orig-tokens-max').textContent = origTokensMax.toLocaleString();
+            document.getElementById('synth-tokens-max').textContent = synthTokensMax.toLocaleString();
             document.getElementById('orig-tokens-sum').textContent = origTokensSum.toLocaleString();
             document.getElementById('synth-tokens-sum').textContent = synthTokensSum.toLocaleString();
             
@@ -651,6 +653,7 @@
                 const msgUsedMax = stats.context_stats.used_max !== undefined ? stats.context_stats.used_max : 'N/A';
                 const msgAvailMax = stats.context_stats.avail_max !== undefined ? stats.context_stats.avail_max : 'N/A';
                 const tokensUsedMax = stats.context_stats.tokens_used_max !== undefined ? stats.context_stats.tokens_used_max : 'N/A';
+                const tokensAvailMax = stats.context_stats.tokens_avail_max !== undefined ? stats.context_stats.tokens_avail_max : 'N/A';
                 
                 // Calculate sum values
                 const msgUsedSum = stats.context_stats.used_sum !== undefined ? 
@@ -683,7 +686,7 @@
                 document.getElementById('context-token-used-min').textContent = tokensUsedMin;
                 document.getElementById('context-token-avail-min').textContent = 'N/A';
                 document.getElementById('context-token-used-max').textContent = tokensUsedMax;
-                document.getElementById('context-token-avail-max').textContent = 'N/A';
+                document.getElementById('context-token-avail-max').textContent = tokensAvailMax;
                 document.getElementById('context-token-used-sum').textContent = tokensUsedSum;
                 document.getElementById('context-token-avail-sum').textContent = 'N/A';
             } else {
@@ -781,22 +784,37 @@
             // Hide loading indicator
             document.getElementById('loading-msg-length').style.display = 'none';
             
-            // Create histogram
+            // Create histogram data
+            const bins = data.bins;
+            const origHist = data.orig_hist;
+            const synthHist = data.synth_hist;
+            
+            // Create labels for the chart (bin ranges)
+            const labels = [];
+            for (let i = 0; i < bins.length; i++) {
+                if (i % 4 === 0) {  // Only show every 4th label to avoid crowding
+                    labels.push(bins[i]);
+                } else {
+                    labels.push('');
+                }
+            }
+            
+            // Create bar chart
             new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: data.bins.map(bin => `${bin}-${bin+50}`),
+                    labels: labels,
                     datasets: [
                         {
                             label: 'Original Posts',
-                            data: data.orig_hist,
+                            data: origHist,
                             backgroundColor: 'rgba(53, 162, 235, 0.5)',
                             borderColor: 'rgba(53, 162, 235, 1)',
                             borderWidth: 1
                         },
                         {
                             label: 'Synthetic Posts',
-                            data: data.synth_hist,
+                            data: synthHist,
                             backgroundColor: 'rgba(233, 84, 32, 0.5)',
                             borderColor: 'rgba(233, 84, 32, 1)',
                             borderWidth: 1
@@ -856,7 +874,7 @@
                             callbacks: {
                                 title: function(tooltipItems) {
                                     const item = tooltipItems[0];
-                                    const bin = data.bins[item.dataIndex];
+                                    const bin = bins[item.dataIndex];
                                     return `${bin}-${bin+50} characters`;
                                 },
                                 label: function(context) {
@@ -876,45 +894,39 @@
             // Hide loading indicator
             document.getElementById('loading-token-dist').style.display = 'none';
             
-            // Create token bins (0-25, 25-50, etc.)
-            const tokenBins = Array.from({length: 20}, (_, i) => i * 25);
+            // Create token bins (convert character bins to token bins)
+            const tokenBins = data.bins.map(bin => Math.round(bin * 0.25));
             
-            // Create histograms for tokens (estimated based on word counts)
-            // In a real implementation, you would use actual token counts from the server
-            const origTokenCounts = data.orig_words.map(count => Math.round(count * 1.3));
-            const synthTokenCounts = data.synth_words.map(count => Math.round(count * 1.3));
+            // Create histogram data
+            const origHist = data.orig_hist;
+            const synthHist = data.synth_hist;
             
-            // Create histograms
-            const origTokenHist = new Array(20).fill(0);
-            const synthTokenHist = new Array(20).fill(0);
+            // Create labels for the chart (bin ranges)
+            const labels = [];
+            for (let i = 0; i < tokenBins.length; i++) {
+                if (i % 4 === 0) {  // Only show every 4th label to avoid crowding
+                    labels.push(tokenBins[i]);
+                } else {
+                    labels.push('');
+                }
+            }
             
-            // Fill histograms
-            origTokenCounts.forEach(count => {
-                const binIndex = Math.min(Math.floor(count / 25), 19);
-                origTokenHist[binIndex]++;
-            });
-            
-            synthTokenCounts.forEach(count => {
-                const binIndex = Math.min(Math.floor(count / 25), 19);
-                synthTokenHist[binIndex]++;
-            });
-            
-            // Create histogram for tokens
+            // Create bar chart
             new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: tokenBins.map(bin => `${bin}-${bin+25}`),
+                    labels: labels,
                     datasets: [
                         {
                             label: 'Original Posts',
-                            data: origTokenHist,
+                            data: origHist,
                             backgroundColor: 'rgba(53, 162, 235, 0.5)',
                             borderColor: 'rgba(53, 162, 235, 1)',
                             borderWidth: 1
                         },
                         {
                             label: 'Synthetic Posts',
-                            data: synthTokenHist,
+                            data: synthHist,
                             backgroundColor: 'rgba(233, 84, 32, 0.5)',
                             borderColor: 'rgba(233, 84, 32, 1)',
                             borderWidth: 1
@@ -939,7 +951,7 @@
                                 color: '#FFF',
                                 callback: function(value, index) {
                                     // Show fewer labels for readability
-                                    return index % 2 === 0 ? this.getLabelForValue(value) : '';
+                                    return index % 4 === 0 ? this.getLabelForValue(value) : '';
                                 }
                             },
                             grid: {
@@ -994,22 +1006,70 @@
             // Hide loading indicator
             document.getElementById('loading-user-count').style.display = 'none';
             
+            console.log("User count data:", data);
+            
+            // Check if we have the necessary data
+            if (!data || !data.orig_counts || !data.synth_counts || 
+                data.orig_counts.length === 0 || data.synth_counts.length === 0) {
+                console.log("No user count data available");
+                
+                // Display a message on the canvas
+                const chart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['No Data Available'],
+                        datasets: [{
+                            label: 'No user count data available',
+                            data: [0],
+                            backgroundColor: 'rgba(119, 41, 83, 0.2)',
+                            borderColor: 'rgba(119, 41, 83, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                enabled: false
+                            }
+                        }
+                    }
+                });
+                
+                return;
+            }
+            
+            // Create labels for the chart
+            const labels = ['1 user', '2 users', '3 users', '4 users', '5 users', '6+ users'];
+            
+            // Ensure we have the right number of data points
+            const origCounts = data.orig_counts.slice(0, 6);
+            const synthCounts = data.synth_counts.slice(0, 6);
+            
+            // Pad arrays if they're too short
+            while (origCounts.length < 6) origCounts.push(0);
+            while (synthCounts.length < 6) synthCounts.push(0);
+            
             // Create bar chart
             new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: ['1 user', '2 users', '3 users', '4 users', '5 users', '6+ users'],
+                    labels: labels,
                     datasets: [
                         {
                             label: 'Original Conversations',
-                            data: data.orig_counts,
+                            data: origCounts,
                             backgroundColor: 'rgba(53, 162, 235, 0.5)',
                             borderColor: 'rgba(53, 162, 235, 1)',
                             borderWidth: 1
                         },
                         {
                             label: 'Synthetic Conversations',
-                            data: data.synth_counts,
+                            data: synthCounts,
                             backgroundColor: 'rgba(233, 84, 32, 0.5)',
                             borderColor: 'rgba(233, 84, 32, 1)',
                             borderWidth: 1

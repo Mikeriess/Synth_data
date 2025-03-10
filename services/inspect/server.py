@@ -626,15 +626,29 @@ class AnnotationHandler(SimpleHTTPRequestHandler):
             synth_users = set()
             
             for msg in conv.get(orig_messages_field, []):
+                # Try different fields that might contain user ID
+                user_id = None
                 if 'user' in msg:
                     user_id = msg['user']
+                elif 'poster_id' in msg:
+                    user_id = msg['poster_id']
+                
+                if user_id is not None:
+                    # Convert to integer if it's a float
                     if isinstance(user_id, (int, float)):
                         user_id = int(float(user_id))
                     orig_users.add(user_id)
             
             for msg in conv.get(synth_messages_field, []):
+                # Try different fields that might contain user ID
+                user_id = None
                 if 'user' in msg:
                     user_id = msg['user']
+                elif 'poster_id' in msg:
+                    user_id = msg['poster_id']
+                
+                if user_id is not None:
+                    # Convert to integer if it's a float
                     if isinstance(user_id, (int, float)):
                         user_id = int(float(user_id))
                     synth_users.add(user_id)
@@ -701,8 +715,8 @@ class AnnotationHandler(SimpleHTTPRequestHandler):
         orig_words = np.array(message_lengths['orig_words'])
         synth_words = np.array(message_lengths['synth_words'])
         
-        # Create histograms for message lengths
-        bins = list(range(0, 1001, 50))  # 0-1000 in steps of 50
+        # Create histograms for message lengths with more bins
+        bins = list(range(0, 2001, 25))  # 0-2000 in steps of 25 (80 bins instead of 20)
         orig_hist, _ = np.histogram(orig_lengths, bins=bins)
         synth_hist, _ = np.histogram(synth_lengths, bins=bins)
         
