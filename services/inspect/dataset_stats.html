@@ -189,6 +189,62 @@
 
     <div class="stats-container">
         <div class="stats-card">
+            <h2 class="chart-title">Context Usage Statistics</h2>
+            <table id="context-summary-stats">
+                <tr>
+                    <th>Metric</th>
+                    <th>Messages Used</th>
+                    <th>Messages Available</th>
+                    <th>Usage %</th>
+                </tr>
+                <tr>
+                    <td>Average</td>
+                    <td id="context-msg-used-avg">-</td>
+                    <td id="context-msg-avail-avg">-</td>
+                    <td id="context-msg-usage-pct">-</td>
+                </tr>
+                <tr>
+                    <td>Minimum</td>
+                    <td id="context-msg-used-min">-</td>
+                    <td id="context-msg-avail-min">-</td>
+                    <td id="context-msg-usage-min-pct">-</td>
+                </tr>
+                <tr>
+                    <td>Maximum</td>
+                    <td id="context-msg-used-max">-</td>
+                    <td id="context-msg-avail-max">-</td>
+                    <td id="context-msg-usage-max-pct">-</td>
+                </tr>
+                <tr>
+                    <th>Metric</th>
+                    <th>Tokens Used</th>
+                    <th>Tokens Available</th>
+                    <th>Usage %</th>
+                </tr>
+                <tr>
+                    <td>Average</td>
+                    <td id="context-token-used-avg">-</td>
+                    <td id="context-token-avail-avg">-</td>
+                    <td id="context-token-usage-pct">-</td>
+                </tr>
+                <tr>
+                    <td>Minimum</td>
+                    <td id="context-token-used-min">-</td>
+                    <td id="context-token-avail-min">-</td>
+                    <td id="context-token-usage-min-pct">-</td>
+                </tr>
+                <tr>
+                    <td>Maximum</td>
+                    <td id="context-token-used-max">-</td>
+                    <td id="context-token-avail-max">-</td>
+                    <td id="context-token-usage-max-pct">-</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="stats-container">
+        <div class="stats-card">
             <h2 class="chart-title">Post Count Statistics</h2>
             <table id="message-stats">
                 <tr>
@@ -505,6 +561,65 @@
                 document.getElementById('ks-char-result').textContent = 'Error';
                 document.getElementById('chi-length-result').textContent = 'Error';
                 document.getElementById('mw-message-result').textContent = 'Error';
+            }
+            
+            // Add context statistics if available
+            if (stats.context_stats && stats.context_stats.messages_used && stats.context_stats.messages_used.length > 0) {
+                // Calculate min/max values
+                const minMessagesUsed = Math.min(...stats.context_stats.messages_used);
+                const maxMessagesUsed = Math.max(...stats.context_stats.messages_used);
+                const minMessagesTotal = Math.min(...stats.context_stats.messages_total);
+                const maxMessagesTotal = Math.max(...stats.context_stats.messages_total);
+                const minTokensUsed = Math.min(...stats.context_stats.tokens_used);
+                const maxTokensUsed = Math.max(...stats.context_stats.tokens_used);
+                const minMaxTokens = Math.min(...stats.context_stats.max_tokens);
+                const maxMaxTokens = Math.max(...stats.context_stats.max_tokens);
+                
+                // Calculate averages
+                const avgMessagesUsed = stats.context_stats.avg_messages_used;
+                const avgMessagesTotal = stats.context_stats.avg_messages_total;
+                const avgTokensUsed = stats.context_stats.avg_tokens_used;
+                const avgMaxTokens = stats.context_stats.avg_max_tokens;
+                
+                // Calculate usage percentages
+                const avgMsgUsagePct = (avgMessagesUsed / avgMessagesTotal * 100).toFixed(2);
+                const minMsgUsagePct = (minMessagesUsed / minMessagesTotal * 100).toFixed(2);
+                const maxMsgUsagePct = (maxMessagesUsed / maxMessagesTotal * 100).toFixed(2);
+                
+                const avgTokenUsagePct = (avgTokensUsed / avgMaxTokens * 100).toFixed(2);
+                const minTokenUsagePct = (minTokensUsed / minMaxTokens * 100).toFixed(2);
+                const maxTokenUsagePct = (maxTokensUsed / maxMaxTokens * 100).toFixed(2);
+                
+                // Update the context summary table
+                document.getElementById('context-msg-used-avg').textContent = avgMessagesUsed.toFixed(2);
+                document.getElementById('context-msg-avail-avg').textContent = avgMessagesTotal.toFixed(2);
+                document.getElementById('context-msg-usage-pct').textContent = `${avgMsgUsagePct}%`;
+                
+                document.getElementById('context-msg-used-min').textContent = minMessagesUsed;
+                document.getElementById('context-msg-avail-min').textContent = minMessagesTotal;
+                document.getElementById('context-msg-usage-min-pct').textContent = `${minMsgUsagePct}%`;
+                
+                document.getElementById('context-msg-used-max').textContent = maxMessagesUsed;
+                document.getElementById('context-msg-avail-max').textContent = maxMessagesTotal;
+                document.getElementById('context-msg-usage-max-pct').textContent = `${maxMsgUsagePct}%`;
+                
+                document.getElementById('context-token-used-avg').textContent = avgTokensUsed.toFixed(2);
+                document.getElementById('context-token-avail-avg').textContent = avgMaxTokens.toFixed(2);
+                document.getElementById('context-token-usage-pct').textContent = `${avgTokenUsagePct}%`;
+                
+                document.getElementById('context-token-used-min').textContent = minTokensUsed;
+                document.getElementById('context-token-avail-min').textContent = minMaxTokens;
+                document.getElementById('context-token-usage-min-pct').textContent = `${minTokenUsagePct}%`;
+                
+                document.getElementById('context-token-used-max').textContent = maxTokensUsed;
+                document.getElementById('context-token-avail-max').textContent = maxMaxTokens;
+                document.getElementById('context-token-usage-max-pct').textContent = `${maxTokenUsagePct}%`;
+            } else {
+                // Hide the context summary table if no data is available
+                const contextSummaryTable = document.getElementById('context-summary-stats');
+                if (contextSummaryTable) {
+                    contextSummaryTable.closest('.stats-card').style.display = 'none';
+                }
             }
         }
         
