@@ -571,6 +571,14 @@ class AnnotationHandler(SimpleHTTPRequestHandler):
             'synth_users': []
         }
         
+        # Extract context statistics directly from dataset fields if available
+        context_stats = {
+            'messages_used': [],
+            'messages_total': [],
+            'tokens_used': [],
+            'max_tokens': []
+        }
+        
         # Process each conversation
         for conv in conversations:
             # Get message counts
@@ -616,6 +624,20 @@ class AnnotationHandler(SimpleHTTPRequestHandler):
             
             user_counts['orig_users'].append(len(orig_users))
             user_counts['synth_users'].append(len(synth_users))
+            
+            # Try to get context stats from top-level fields first
+            if 'context_msg_used' in conv and 'context_msg_available' in conv:
+                context_stats['messages_used'].append(conv.get('context_msg_used', 0))
+                context_stats['messages_total'].append(conv.get('context_msg_available', 0))
+                context_stats['tokens_used'].append(conv.get('context_tokens_used', 0))
+                context_stats['max_tokens'].append(conv.get('context_tokens_available', 0))
+            # Fall back to metadata if top-level fields aren't available
+            elif 'metadata' in conv and 'context_stats' in conv['metadata']:
+                stats = conv['metadata']['context_stats']
+                context_stats['messages_used'].append(stats.get('messages_used', 0))
+                context_stats['messages_total'].append(stats.get('total_messages', 0))
+                context_stats['tokens_used'].append(stats.get('tokens_used', 0))
+                context_stats['max_tokens'].append(stats.get('max_tokens', 0))
         
         # Calculate message count statistics
         orig_counts = np.array(message_counts['orig_counts'])
@@ -685,23 +707,6 @@ class AnnotationHandler(SimpleHTTPRequestHandler):
             'orig_counts': orig_counts_binned,
             'synth_counts': synth_counts_binned
         })
-        
-        # Add context statistics if available
-        context_stats = {
-            'messages_used': [],
-            'messages_total': [],
-            'tokens_used': [],
-            'max_tokens': []
-        }
-        
-        # Extract context statistics from metadata
-        for conv in conversations:
-            if 'metadata' in conv and 'context_stats' in conv['metadata']:
-                stats = conv['metadata']['context_stats']
-                context_stats['messages_used'].append(stats.get('messages_used', 0))
-                context_stats['messages_total'].append(stats.get('total_messages', 0))
-                context_stats['tokens_used'].append(stats.get('tokens_used', 0))
-                context_stats['max_tokens'].append(stats.get('max_tokens', 0))
         
         # Calculate averages if data exists
         if context_stats['messages_used']:

@@ -401,7 +401,7 @@ def create_analysis_dataset(generated_dataset: dict, model_name: str) -> List[Di
         analysis_entry = {
             'model': model_name,
             'conversation_id': conv_id,
-            'original_messages': orig_messages,
+            'orig_messages': orig_messages,
             'synthetic_messages': synthetic_messages,
             'orig_message_count': orig_message_count,
             'synthetic_message_count': synthetic_message_count,
@@ -410,6 +410,7 @@ def create_analysis_dataset(generated_dataset: dict, model_name: str) -> List[Di
             'synthetic_total_length': synthetic_total_length,
             'orig_total_tokens': orig_total_tokens,
             'synthetic_total_tokens': synthetic_total_tokens,
+            # Add context statistics as top-level fields
             'context_msg_used': context_msg_used,
             'context_msg_available': context_msg_available,
             'context_tokens_used': context_tokens_used,
@@ -534,40 +535,7 @@ def main(config_path: str):
 
     # Create and save dataset
     model_name = config['generation_config']['model']
-    analysis_dataset = []
-    for conv_id, data in generated_dataset.items():
-        # Extract original and synthetic messages
-        orig_messages = data['original_messages']
-        synthetic_messages = data['parsed_messages']
-        
-        # Create analysis entry
-        analysis_entry = {
-            'model': model_name,
-            'conversation_id': conv_id,
-            'orig_messages': orig_messages,
-            'synthetic_messages': synthetic_messages,
-            'orig_message_count': len(orig_messages),
-            'synthetic_message_count': len(synthetic_messages),
-            'message_count_diff': len(synthetic_messages) - len(orig_messages),
-            'orig_total_length': sum(len(msg.get('text', '')) for msg in orig_messages),
-            'synthetic_total_length': sum(len(msg.get('text', '')) for msg in synthetic_messages),
-            'orig_total_tokens': sum(len(msg.get('text', '').split()) for msg in orig_messages),
-            'synthetic_total_tokens': sum(len(msg.get('text', '').split()) for msg in synthetic_messages)
-        }
-        
-        # Add context statistics if available
-        if 'metadata' in data and 'context_stats' in data['metadata']:
-            context_stats = data['metadata']['context_stats']
-            analysis_entry['context_msg_used'] = context_stats.get('messages_used', 0)
-            analysis_entry['context_msg_available'] = context_stats.get('total_messages', 0)
-            analysis_entry['context_tokens_used'] = context_stats.get('tokens_used', 0)
-            analysis_entry['context_tokens_available'] = context_stats.get('max_tokens', 0)
-        
-        # Add metadata if available
-        if 'metadata' in data:
-            analysis_entry['metadata'] = data['metadata']
-        
-        analysis_dataset.append(analysis_entry)
+    analysis_dataset = create_analysis_dataset(generated_dataset, model_name)
     
     hf_dataset = create_hf_dataset(
         analysis_dataset=analysis_dataset,
