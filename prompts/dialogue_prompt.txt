@@ -6,7 +6,8 @@ VIGTIGT:
 - Stil spørgsmålet i første besked sådan, at det giver detaljeret kontekst for problemet.
 - Alle entiteter i dialogen såsom musikudstyr, instrumenter, software, etc. skal ikke anonymiseres.
 - Sørg så vidt muligt for at dialogen slutter med en (gerne detailjeret) løsning på problemet, hvis den findes i konteksten.
-- Undlad at starte dialogen med "hej" eller anden hilsen, gå i stedet direkte til sagen, gerne i detaljer.
+- Undlad at starte dialogen med "hej" eller anden hilsen, gå i stedet direkte til sagen.
+- Både svar og spørgsmål skal have så mange faglige detaljer som muligt fra den oprindelse kontekst.
 
 Dialogen skal have mindst 1 udveksling frem og tilbage, men gerne følge antallet af udvekslinger i konteksten.
 
