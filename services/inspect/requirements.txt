@@ -5,8 +5,8 @@ numpy==1.21.2
 openpyxl==3.0.9
 
 # HuggingFace dependencies
-datasets==2.4.0
-huggingface-hub==0.10.1
+datasets>=2.4.0
+huggingface-hub>=0.12.0
 
 # HTTP server
 requests==2.26.0 
