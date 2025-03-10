@@ -1179,6 +1179,38 @@
             document.getElementById('context-token-usage-max-pct').textContent = `${maxTokenUsagePct}%`;
         }
         
+        // Function to create a histogram from data
+        function createHistogram(data, numBins) {
+            // If numBins is a number, create equal-sized bins
+            if (typeof numBins === 'number') {
+                const min = Math.min(...data);
+                const max = Math.max(...data);
+                const binWidth = (max - min) / numBins;
+                
+                // Create bin edges
+                const bins = Array(numBins).fill().map((_, i) => min + i * binWidth);
+                bins.push(max); // Add the upper edge of the last bin
+                
+                return createHistogram(data, bins);
+            }
+            
+            // If numBins is an array, use it as bin edges
+            const bins = numBins;
+            const counts = Array(bins.length - 1).fill(0);
+            
+            // Count values in each bin
+            for (const value of data) {
+                for (let i = 0; i < bins.length - 1; i++) {
+                    if (value >= bins[i] && (i === bins.length - 2 ? value <= bins[i + 1] : value < bins[i + 1])) {
+                        counts[i]++;
+                        break;
+                    }
+                }
+            }
+            
+            return counts;
+        }
+        
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             fetchDatasetStats();
@@ -1187,6 +1219,4 @@
         });
     </script>
 </body>
-</html> 
-</html> 
 </html> 
