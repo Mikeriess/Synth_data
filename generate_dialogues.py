@@ -270,7 +270,7 @@ def backup_config_files(checkpoint_dir: str, config_path: str, prompt_path: str)
     with open(prompt_path, 'r') as src, open(prompt_backup, 'w') as dst:
         dst.write(src.read())
 
-def build_context_with_token_limit(messages: List[Dict], prompt_template: str, max_input_tokens: int) -> str:
+def build_context_with_token_limit(messages: List[Dict], prompt_template: str, max_input_tokens: int) -> tuple:
     """
     Build context from messages while respecting token limit.
     
@@ -280,7 +280,7 @@ def build_context_with_token_limit(messages: List[Dict], prompt_template: str, m
         max_input_tokens: Maximum allowed tokens for the entire input
         
     Returns:
-        Context string with as many messages as possible within token limit
+        Tuple of (context string, context statistics dictionary)
     """
     # Initialize tokenizer (using a fast tokenizer for efficiency)
     tokenizer = AutoTokenizer.from_pretrained("google/gemma-2-9b-it")
@@ -293,7 +293,7 @@ def build_context_with_token_limit(messages: List[Dict], prompt_template: str, m
     
     if available_tokens <= 0:
         print(f"Warning: Prompt template uses {prompt_tokens} tokens, exceeding the limit of {max_input_tokens}")
-        return ""
+        return "", {"messages_used": 0, "total_messages": len(messages), "tokens_used": 0, "max_tokens": 0}
     
     # Build context incrementally
     context_parts = []
@@ -315,8 +315,16 @@ def build_context_with_token_limit(messages: List[Dict], prompt_template: str, m
     # Join all context parts
     context = "\n".join(context_parts)
     
+    # Create context statistics dictionary
+    context_stats = {
+        "messages_used": len(context_parts),
+        "total_messages": len(messages),
+        "tokens_used": total_context_tokens,
+        "max_tokens": available_tokens
+    }
+    
     print(f"Using {len(context_parts)}/{len(messages)} messages ({total_context_tokens} tokens) for context")
-    return context
+    return context, context_stats
 
 def main(config_path: str):
     # Load configuration
@@ -379,7 +387,7 @@ def main(config_path: str):
                     continue
                     
                 # Build context with token limit
-                context = build_context_with_token_limit(
+                context, context_stats = build_context_with_token_limit(
                     messages=messages,
                     prompt_template=PROMPT_TEMPLATE,
                     max_input_tokens=max_input_tokens
@@ -401,7 +409,10 @@ def main(config_path: str):
                         'original_messages': messages,
                         'generated_output': generated_dialogue,
                         'parsed_messages': parsed_messages,
-                        'metadata': {'model': config['generation_config']['model']}
+                        'metadata': {
+                            'model': config['generation_config']['model'],
+                            'context_stats': context_stats
+                        }
                     }
                     processed_ids.add(conv_id)
                     current_count += 1

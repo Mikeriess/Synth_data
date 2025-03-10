@@ -350,6 +350,26 @@
         </div>
     </div>
 
+    <div class="chart-section">
+        <h2 class="chart-title">Context Statistics</h2>
+        <p class="chart-description">Statistics about the context used for generation</p>
+        
+        <div class="stats-container">
+            <div class="stats-card">
+                <h3>Messages Used</h3>
+                <div id="messages-used-stats">Loading...</div>
+            </div>
+            <div class="stats-card">
+                <h3>Token Usage</h3>
+                <div id="token-usage-stats">Loading...</div>
+            </div>
+        </div>
+        
+        <div class="chart-container">
+            <canvas id="context-stats-chart"></canvas>
+        </div>
+    </div>
+
     <script>
         // Function to fetch dataset statistics
         async function fetchDatasetStats() {
@@ -387,6 +407,9 @@
                 createMessageLengthChart(stats.message_lengths);
                 createTokenDistChart(stats.message_lengths);
                 createUserCountChart(stats.user_counts);
+                
+                // Process context statistics
+                const contextStats = processContextStats(stats.conversations);
                 
             } catch (error) {
                 console.error('Error fetching dataset statistics:', error);
@@ -1041,6 +1064,112 @@
                 z: z,
                 significant: Math.abs(z) > 1.96 // 95% confidence
             };
+        }
+        
+        // Function to process context statistics
+        function processContextStats(conversations) {
+            const contextStats = {
+                messagesUsed: [],
+                messagesTotal: [],
+                tokensUsed: [],
+                maxTokens: [],
+                messagesRatio: []
+            };
+            
+            let totalMessagesUsed = 0;
+            let totalMessagesAvailable = 0;
+            let totalTokensUsed = 0;
+            let totalMaxTokens = 0;
+            
+            conversations.forEach(conv => {
+                if (conv.metadata && conv.metadata.context_stats) {
+                    const stats = conv.metadata.context_stats;
+                    
+                    contextStats.messagesUsed.push(stats.messages_used);
+                    contextStats.messagesTotal.push(stats.total_messages);
+                    contextStats.tokensUsed.push(stats.tokens_used);
+                    contextStats.maxTokens.push(stats.max_tokens);
+                    contextStats.messagesRatio.push(stats.messages_used / stats.total_messages);
+                    
+                    totalMessagesUsed += stats.messages_used;
+                    totalMessagesAvailable += stats.total_messages;
+                    totalTokensUsed += stats.tokens_used;
+                    totalMaxTokens += stats.max_tokens;
+                }
+            });
+            
+            // Calculate averages
+            const avgMessagesUsed = contextStats.messagesUsed.length > 0 ? 
+                totalMessagesUsed / contextStats.messagesUsed.length : 0;
+            const avgMessagesTotal = contextStats.messagesTotal.length > 0 ? 
+                totalMessagesAvailable / contextStats.messagesTotal.length : 0;
+            const avgTokensUsed = contextStats.tokensUsed.length > 0 ? 
+                totalTokensUsed / contextStats.tokensUsed.length : 0;
+            const avgMaxTokens = contextStats.maxTokens.length > 0 ? 
+                totalMaxTokens / contextStats.maxTokens.length : 0;
+            
+            // Update the UI
+            document.getElementById('messages-used-stats').innerHTML = `
+                <p>Average messages used: <strong>${avgMessagesUsed.toFixed(2)}</strong> out of <strong>${avgMessagesTotal.toFixed(2)}</strong></p>
+                <p>Average usage ratio: <strong>${(avgMessagesUsed / avgMessagesTotal * 100).toFixed(2)}%</strong></p>
+            `;
+            
+            document.getElementById('token-usage-stats').innerHTML = `
+                <p>Average tokens used: <strong>${avgTokensUsed.toFixed(2)}</strong> out of <strong>${avgMaxTokens.toFixed(2)}</strong></p>
+                <p>Average token usage: <strong>${(avgTokensUsed / avgMaxTokens * 100).toFixed(2)}%</strong></p>
+            `;
+            
+            // Create histogram of messages used ratio
+            const ratioChart = new Chart(
+                document.getElementById('context-stats-chart'),
+                {
+                    type: 'bar',
+                    data: {
+                        labels: ['0-10%', '10-20%', '20-30%', '30-40%', '40-50%', '50-60%', '60-70%', '70-80%', '80-90%', '90-100%'],
+                        datasets: [{
+                            label: 'Message Usage Ratio Distribution',
+                            data: createHistogram(contextStats.messagesRatio, 10),
+                            backgroundColor: '#E95420'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Distribution of Message Usage Ratio (Messages Used / Total Messages)',
+                                color: '#FFF'
+                            },
+                            legend: {
+                                labels: {
+                                    color: '#FFF'
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                ticks: {
+                                    color: '#FFF'
+                                },
+                                grid: {
+                                    color: '#772953'
+                                }
+                            },
+                            y: {
+                                ticks: {
+                                    color: '#FFF'
+                                },
+                                grid: {
+                                    color: '#772953'
+                                }
+                            }
+                        }
+                    }
+                }
+            );
+            
+            return contextStats;
         }
         
         // Initialize
