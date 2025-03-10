@@ -21,5 +21,11 @@ ENV HOST=0.0.0.0
 ENV HF_TOKEN=${HUGGING_FACE_HUB_TOKEN}
 ENV HUGGING_FACE_HUB_TOKEN=${HUGGING_FACE_HUB_TOKEN}
 
-# Run the server
-CMD python services/inspect/server.py 
+# Create symbolic links for HTML files in the working directory
+CMD cd services/inspect && \
+    for file in *.html; do \
+        ln -sf /workspace/services/inspect/$file /workspace/$file; \
+    done && \
+    ln -sf /workspace/services/inspect/inspector.js /workspace/inspector.js && \
+    cd /workspace && \
+    python services/inspect/server.py 
