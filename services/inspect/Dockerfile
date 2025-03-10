@@ -1,15 +1,15 @@
 # Use Python 3.9 as the base image
 FROM python:3.9-slim
 
-# Set working directory to the project root
-WORKDIR /workspace
+# Set working directory to the inspect directory
+WORKDIR /app
 
 # Install dependencies
-COPY services/inspect/requirements.txt /workspace/requirements.txt
+COPY services/inspect/requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Create necessary directories
-RUN mkdir -p services/inspect/datasets/default
+RUN mkdir -p datasets/default
 
 # Expose the port the server runs on
 EXPOSE 8000
@@ -21,11 +21,5 @@ ENV HOST=0.0.0.0
 ENV HF_TOKEN=${HUGGING_FACE_HUB_TOKEN}
 ENV HUGGING_FACE_HUB_TOKEN=${HUGGING_FACE_HUB_TOKEN}
 
-# Create symbolic links for HTML files in the working directory
-CMD cd services/inspect && \
-    for file in *.html; do \
-        ln -sf /workspace/services/inspect/$file /workspace/$file; \
-    done && \
-    ln -sf /workspace/services/inspect/inspector.js /workspace/inspector.js && \
-    cd /workspace && \
-    python services/inspect/server.py 
+# Run the server
+CMD ["python", "server.py"] 

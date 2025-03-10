@@ -8,8 +8,8 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      # Mount the entire project directory
-      - ../../:/workspace
+      # Mount only the inspect directory
+      - ../../services/inspect:/app
     environment:
       - HOST=0.0.0.0
       - HUGGING_FACE_HUB_TOKEN=${HUGGING_FACE_HUB_TOKEN}
