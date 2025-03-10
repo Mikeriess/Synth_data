@@ -16,7 +16,7 @@ from collections import Counter
 
 # Add parent directory to path to import dataset_processor
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
-from services.inspect.dataset_processor import process_dataset
+from dataset_processor import process_dataset
 
 class AnnotationHandler(SimpleHTTPRequestHandler):
     def do_GET(self):
