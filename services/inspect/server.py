@@ -572,13 +572,25 @@ class AnnotationHandler(SimpleHTTPRequestHandler):
             'synth_users': []
         }
         
-        # Extract context statistics directly from dataset fields if available
+        # Extract context statistics directly from top-level fields
         context_stats = {
-            'messages_used': [],
-            'messages_total': [],
+            'used_counts': [],
+            'avail_counts': [],
             'tokens_used': [],
-            'max_tokens': []
+            'tokens_avail': []
         }
+        
+        # At the beginning of calculate_dataset_stats
+        if conversations:
+            print("First conversation keys:", list(conversations[0].keys()))
+            if 'metadata' in conversations[0]:
+                print("Metadata keys:", list(conversations[0]['metadata'].keys()))
+            
+            # Print the actual context values if they exist
+            for key in ['context_msg_used', 'context_msg_available', 
+                        'context_tokens_used', 'context_tokens_available']:
+                if key in conversations[0]:
+                    print(f"{key}: {conversations[0][key]}")
         
         # Process each conversation
         for conv in conversations:
@@ -630,19 +642,42 @@ class AnnotationHandler(SimpleHTTPRequestHandler):
             user_counts['orig_users'].append(len(orig_users))
             user_counts['synth_users'].append(len(synth_users))
             
-            # Try to get context stats from top-level fields first
-            if 'context_msg_used' in conv and 'context_msg_available' in conv:
-                context_stats['messages_used'].append(conv.get('context_msg_used', 0))
-                context_stats['messages_total'].append(conv.get('context_msg_available', 0))
-                context_stats['tokens_used'].append(conv.get('context_tokens_used', 0))
-                context_stats['max_tokens'].append(conv.get('context_tokens_available', 0))
-            # Fall back to metadata if top-level fields aren't available
-            elif 'metadata' in conv and 'context_stats' in conv['metadata']:
-                stats = conv['metadata']['context_stats']
-                context_stats['messages_used'].append(stats.get('messages_used', 0))
-                context_stats['messages_total'].append(stats.get('total_messages', 0))
-                context_stats['tokens_used'].append(stats.get('tokens_used', 0))
-                context_stats['max_tokens'].append(stats.get('max_tokens', 0))
+            # Extract context statistics directly from top-level fields
+            context_msg_used = conv.get('context_msg_used', 0)
+            context_msg_available = conv.get('context_msg_available', 0)
+            context_tokens_used = conv.get('context_tokens_used', 0)
+            context_tokens_available = conv.get('context_tokens_available', 0)
+            
+            # Convert to integers if needed
+            if isinstance(context_msg_used, str):
+                try:
+                    context_msg_used = int(context_msg_used)
+                except ValueError:
+                    context_msg_used = 0
+            
+            if isinstance(context_msg_available, str):
+                try:
+                    context_msg_available = int(context_msg_available)
+                except ValueError:
+                    context_msg_available = 0
+            
+            if isinstance(context_tokens_used, str):
+                try:
+                    context_tokens_used = int(context_tokens_used)
+                except ValueError:
+                    context_tokens_used = 0
+            
+            if isinstance(context_tokens_available, str):
+                try:
+                    context_tokens_available = int(context_tokens_available)
+                except ValueError:
+                    context_tokens_available = 0
+            
+            # Add to arrays
+            context_stats['used_counts'].append(context_msg_used)
+            context_stats['avail_counts'].append(context_msg_available)
+            context_stats['tokens_used'].append(context_tokens_used)
+            context_stats['tokens_avail'].append(context_tokens_available)
         
         # Calculate message count statistics
         orig_counts = np.array(message_counts['orig_counts'])
@@ -713,21 +748,83 @@ class AnnotationHandler(SimpleHTTPRequestHandler):
             'synth_counts': synth_counts_binned
         })
         
-        # Calculate averages if data exists
-        if context_stats['messages_used']:
-            context_stats['avg_messages_used'] = sum(context_stats['messages_used']) / len(context_stats['messages_used'])
-            context_stats['avg_messages_total'] = sum(context_stats['messages_total']) / len(context_stats['messages_total'])
-            context_stats['avg_tokens_used'] = sum(context_stats['tokens_used']) / len(context_stats['tokens_used'])
-            context_stats['avg_max_tokens'] = sum(context_stats['max_tokens']) / len(context_stats['max_tokens'])
-            context_stats['usage_ratio'] = context_stats['avg_messages_used'] / context_stats['avg_messages_total'] if context_stats['avg_messages_total'] > 0 else 0
-            context_stats['token_usage'] = context_stats['avg_tokens_used'] / context_stats['avg_max_tokens'] if context_stats['avg_max_tokens'] > 0 else 0
+        # Calculate context statistics similar to message count statistics
+        used_counts = np.array(context_stats['used_counts'])
+        avail_counts = np.array(context_stats['avail_counts'])
+        tokens_used = np.array(context_stats['tokens_used'])
+        tokens_avail = np.array(context_stats['tokens_avail'])
         
+        # Only calculate if we have data
+        if len(used_counts) > 0:
+            context_stats.update({
+                'used_avg': float(np.mean(used_counts)),
+                'avail_avg': float(np.mean(avail_counts)),
+                'used_median': float(np.median(used_counts)),
+                'avail_median': float(np.median(avail_counts)),
+                'used_min': int(np.min(used_counts)),
+                'avail_min': int(np.min(avail_counts)),
+                'used_max': int(np.max(used_counts)),
+                'avail_max': int(np.max(avail_counts)),
+                'used_sum': int(np.sum(used_counts)),
+                'avail_sum': int(np.sum(avail_counts)),
+                'tokens_used_avg': float(np.mean(tokens_used)),
+                'tokens_avail_avg': float(np.mean(tokens_avail)),
+                'tokens_used_min': int(np.min(tokens_used)),
+                'tokens_avail_min': int(np.min(tokens_avail)),
+                'tokens_used_max': int(np.max(tokens_used)),
+                'tokens_avail_max': int(np.max(tokens_avail)),
+                'tokens_used_sum': int(np.sum(tokens_used)),
+                'tokens_avail_sum': int(np.sum(tokens_avail)),
+                'usage_ratio': float(np.mean(used_counts) / np.mean(avail_counts)) if np.mean(avail_counts) > 0 else 0,
+                'token_usage': float(np.mean(tokens_used) / np.mean(tokens_avail)) if np.mean(tokens_avail) > 0 else 0
+            })
+        else:
+            # Provide default values if no data
+            context_stats.update({
+                'used_avg': 0.0,
+                'avail_avg': 0.0,
+                'used_median': 0.0,
+                'avail_median': 0.0,
+                'used_min': 0,
+                'avail_min': 0,
+                'used_max': 0,
+                'avail_max': 0,
+                'used_sum': 0,
+                'avail_sum': 0,
+                'tokens_used_avg': 0.0,
+                'tokens_avail_avg': 0.0,
+                'tokens_used_min': 0,
+                'tokens_avail_min': 0,
+                'tokens_used_max': 0,
+                'tokens_avail_max': 0,
+                'tokens_used_sum': 0,
+                'tokens_avail_sum': 0,
+                'usage_ratio': 0.0,
+                'token_usage': 0.0
+            })
+        
+        # Add dataset info to the response
+        dataset_info = {
+            'dataset_id': 'Unknown',
+            'conversation_count': len(conversations)
+        }
+
+        # Try to get the current dataset info
+        try:
+            if os.path.exists("current_dataset.json"):
+                with open("current_dataset.json", "r") as f:
+                    current_dataset = json.load(f)
+                    dataset_info['dataset_id'] = current_dataset.get('dataset_id', 'Unknown')
+        except Exception as e:
+            print(f"Error loading current dataset info: {e}")
+
         # Return all statistics
         return {
             'message_counts': message_counts,
             'message_lengths': message_lengths,
             'user_counts': user_counts,
             'context_stats': context_stats,
+            'dataset_info': dataset_info,
             'conversations': conversations  # Include full conversations for additional processing
         }
 

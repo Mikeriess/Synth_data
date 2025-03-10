@@ -134,6 +134,12 @@
             background-color: #2C001E;
             border-radius: 3px;
         }
+        .stats-description {
+            color: #CCC;
+            font-size: 14px;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
@@ -151,6 +157,7 @@
     <div class="stats-container">
         <div class="stats-card">
             <h2 class="chart-title">Post Count Statistics</h2>
+            <p class="stats-description">Number of posts in each topic. Original vs. synthetic conversations.</p>
             <table id="message-stats">
                 <tr>
                     <th>Metric</th>
@@ -185,7 +192,82 @@
         </div>
         
         <div class="stats-card">
+            <h2 class="chart-title">Character Statistics</h2>
+            <p class="stats-description">Shows the length of original vs. synthetic posts in terms of characters.</p>
+            <table id="char-stats">
+                <tr>
+                    <th>Metric</th>
+                    <th>Original</th>
+                    <th>Synthetic</th>
+                </tr>
+                <tr>
+                    <td>Avg Chars/Post</td>
+                    <td id="orig-chars-avg">-</td>
+                    <td id="synth-chars-avg">-</td>
+                </tr>
+                <tr>
+                    <td>Total Chars</td>
+                    <td id="orig-chars-total">-</td>
+                    <td id="synth-chars-total">-</td>
+                </tr>
+                <tr>
+                    <td>Min Chars</td>
+                    <td id="orig-chars-min">-</td>
+                    <td id="synth-chars-min">-</td>
+                </tr>
+                <tr>
+                    <td>Max Chars</td>
+                    <td id="orig-chars-max">-</td>
+                    <td id="synth-chars-max">-</td>
+                </tr>
+                <tr>
+                    <td>Char Ratio</td>
+                    <td colspan="2" id="char-ratio">-</td>
+                </tr>
+            </table>
+        </div>
+        
+        <div class="stats-card">
+            <h2 class="chart-title">Token Statistics</h2>
+            <p class="stats-description">Token counts in posts. (roughly 1 token ≈ 4 characters or 0.75 words).</p>
+            <table id="token-stats-table">
+                <tr>
+                    <th>Metric</th>
+                    <th>Original</th>
+                    <th>Synthetic</th>
+                </tr>
+                <tr>
+                    <td>Avg Tokens/Post</td>
+                    <td id="orig-tokens-avg">-</td>
+                    <td id="synth-tokens-avg">-</td>
+                </tr>
+                <tr>
+                    <td>Total Tokens</td>
+                    <td id="orig-tokens-total">-</td>
+                    <td id="synth-tokens-total">-</td>
+                </tr>
+                <tr>
+                    <td>Median Tokens</td>
+                    <td id="orig-tokens-median">-</td>
+                    <td id="synth-tokens-median">-</td>
+                </tr>
+                <tr>
+                    <td>Total Tokens (Sum)</td>
+                    <td id="orig-tokens-sum">-</td>
+                    <td id="synth-tokens-sum">-</td>
+                </tr>
+                <tr>
+                    <td>Token Ratio</td>
+                    <td colspan="2" id="token-ratio">-</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="stats-container">
+        <div class="stats-card">
             <h2 class="chart-title">Content Statistics</h2>
+            <p class="stats-description">Word counts and ratios. How words relate to characters and tokens in original vs. synthetic messages.</p>
             <table id="content-stats">
                 <tr>
                     <th>Metric</th>
@@ -198,154 +280,111 @@
                     <td id="synth-words-avg">-</td>
                 </tr>
                 <tr>
-                    <td>Avg Chars/Post</td>
-                    <td id="orig-chars-avg">-</td>
-                    <td id="synth-chars-avg">-</td>
-                </tr>
-                <tr>
                     <td>Total Words</td>
                     <td id="orig-words-total">-</td>
                     <td id="synth-words-total">-</td>
                 </tr>
                 <tr>
-                    <td>Total Chars</td>
-                    <td id="orig-chars-total">-</td>
-                    <td id="synth-chars-total">-</td>
+                    <td>Words/Char Ratio</td>
+                    <td id="orig-words-char-ratio">-</td>
+                    <td id="synth-words-char-ratio">-</td>
+                </tr>
+                <tr>
+                    <td>Words/Token Ratio</td>
+                    <td id="orig-words-token-ratio">-</td>
+                    <td id="synth-words-token-ratio">-</td>
                 </tr>
             </table>
         </div>
         
         <div class="stats-card">
             <h2 class="chart-title">Context Statistics</h2>
+            <p class="stats-description">Context usage during generation. Available vs. used.</p>
             <table id="context-stats-table">
                 <tr>
                     <th>Metric</th>
                     <th>Used</th>
                     <th>Available</th>
-                    <th>Ratio</th>
                 </tr>
                 <tr>
                     <td>Messages (Avg)</td>
                     <td id="context-msg-used-avg">-</td>
                     <td id="context-msg-avail-avg">-</td>
-                    <td id="context-msg-ratio">-</td>
                 </tr>
                 <tr>
                     <td>Messages (Min)</td>
                     <td id="context-msg-used-min">-</td>
                     <td id="context-msg-avail-min">-</td>
-                    <td>-</td>
                 </tr>
                 <tr>
                     <td>Messages (Max)</td>
                     <td id="context-msg-used-max">-</td>
                     <td id="context-msg-avail-max">-</td>
-                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>Messages (Sum)</td>
+                    <td id="context-msg-used-sum">-</td>
+                    <td id="context-msg-avail-sum">-</td>
                 </tr>
                 <tr>
                     <td>Tokens (Avg)</td>
                     <td id="context-token-used-avg">-</td>
                     <td id="context-token-avail-avg">-</td>
-                    <td id="context-token-ratio">-</td>
+                </tr>
+                <tr>
+                    <td>Tokens (Min)</td>
+                    <td id="context-token-used-min">-</td>
+                    <td id="context-token-avail-min">-</td>
+                </tr>
+                <tr>
+                    <td>Tokens (Max)</td>
+                    <td id="context-token-used-max">-</td>
+                    <td id="context-token-avail-max">-</td>
+                </tr>
+                <tr>
+                    <td>Tokens (Sum)</td>
+                    <td id="context-token-used-sum">-</td>
+                    <td id="context-token-avail-sum">-</td>
                 </tr>
             </table>
         </div>
-    </div>
-
-    <div class="chart-section">
-        <h2 class="chart-title">Character Statistics</h2>
-        <table id="char-stats">
-            <tr>
-                <th>Metric</th>
-                <th>Original</th>
-                <th>Synthetic</th>
-            </tr>
-            <tr>
-                <td>Avg Words/Post</td>
-                <td id="orig-words-avg">-</td>
-                <td id="synth-words-avg">-</td>
-            </tr>
-            <tr>
-                <td>Avg Chars/Post</td>
-                <td id="orig-chars-avg">-</td>
-                <td id="synth-chars-avg">-</td>
-            </tr>
-            <tr>
-                <td>Total Words</td>
-                <td id="orig-words-total">-</td>
-                <td id="synth-words-total">-</td>
-            </tr>
-            <tr>
-                <td>Total Chars</td>
-                <td id="orig-chars-total">-</td>
-                <td id="synth-chars-total">-</td>
-            </tr>
-        </table>
-    </div>
-
-    <div class="chart-section">
-        <h2 class="chart-title">Token Statistics</h2>
-        <table id="token-stats">
-            <tr>
-                <th>Metric</th>
-                <th>Original</th>
-                <th>Synthetic</th>
-            </tr>
-            <tr>
-                <td>Avg Tokens/Post</td>
-                <td id="orig-tokens-avg">-</td>
-                <td id="synth-tokens-avg">-</td>
-            </tr>
-            <tr>
-                <td>Median Tokens/Post</td>
-                <td id="orig-tokens-median">-</td>
-                <td id="synth-tokens-median">-</td>
-            </tr>
-            <tr>
-                <td>Total Tokens</td>
-                <td id="orig-tokens-total">-</td>
-                <td id="synth-tokens-total">-</td>
-            </tr>
-            <tr>
-                <td>Total Token Ratio (Synth/Orig)</td>
-                <td colspan="2" id="token-ratio">-</td>
-            </tr>
-        </table>
-    </div>
-
-    <div class="chart-section">
-        <h2 class="chart-title">Distribution Comparison Tests</h2>
-        <table id="stat-tests">
-            <tr>
-                <th>Metric</th>
-                <th>Test</th>
-                <th>Result</th>
-                <th>Significant?</th>
-            </tr>
-            <tr>
-                <td rowspan="2">Post Counts</td>
-                <td>Kolmogorov-Smirnov</td>
-                <td id="ks-message-result">-</td>
-                <td id="ks-message-sig">-</td>
-            </tr>
-            <tr>
-                <td>Mann-Whitney U</td>
-                <td id="mw-message-result">-</td>
-                <td id="mw-message-sig">-</td>
-            </tr>
-            <tr>
-                <td>Character Counts</td>
-                <td>Kolmogorov-Smirnov</td>
-                <td id="ks-char-result">-</td>
-                <td id="ks-char-sig">-</td>
-            </tr>
-            <tr>
-                <td>Length Distribution</td>
-                <td>Chi-Square</td>
-                <td id="chi-length-result">-</td>
-                <td id="chi-length-sig">-</td>
-            </tr>
-        </table>
+        
+        <div class="stats-card">
+            <h2 class="chart-title">Distribution Tests</h2>
+            <p class="stats-description">Statistical tests comparing original and synthetic distributions. Significant = difference.</p>
+            <table id="stat-tests">
+                <tr>
+                    <th>Metric</th>
+                    <th>Test</th>
+                    <th>Result</th>
+                    <th>Significant?</th>
+                </tr>
+                <tr>
+                    <td>Post Counts</td>
+                    <td>Kolmogorov-Smirnov</td>
+                    <td id="ks-message-result">-</td>
+                    <td id="ks-message-sig">-</td>
+                </tr>
+                <tr>
+                    <td>Post Counts</td>
+                    <td>Mann-Whitney U</td>
+                    <td id="mw-message-result">-</td>
+                    <td id="mw-message-sig">-</td>
+                </tr>
+                <tr>
+                    <td>Character Counts</td>
+                    <td>Kolmogorov-Smirnov</td>
+                    <td id="ks-char-result">-</td>
+                    <td id="ks-char-sig">-</td>
+                </tr>
+                <tr>
+                    <td>Length Distribution</td>
+                    <td>Chi-Square</td>
+                    <td id="chi-length-result">-</td>
+                    <td id="chi-length-sig">-</td>
+                </tr>
+            </table>
+        </div>
     </div>
 
     <div class="chart-section">
@@ -357,6 +396,18 @@
                 <div>Loading config...</div>
             </div>
             <pre id="config-content" class="prompt-text"></pre>
+        </div>
+    </div>
+
+    <div class="chart-section">
+        <h2 class="chart-title">Dialogue Prompt</h2>
+        <p class="chart-description">This is the prompt used to generate the synthetic conversations in this dataset.</p>
+        <div class="prompt-container">
+            <div id="loading-prompt" class="loading">
+                <div class="spinner"></div>
+                <div>Loading prompt...</div>
+            </div>
+            <pre id="prompt-content" class="prompt-text"></pre>
         </div>
     </div>
 
@@ -409,14 +460,14 @@
     </div>
 
     <div class="chart-section">
-        <h2 class="chart-title">Dialogue Prompt</h2>
-        <p class="chart-description">This is the prompt used to generate the synthetic conversations in this dataset.</p>
-        <div class="prompt-container">
-            <div id="loading-prompt" class="loading">
+        <h2 class="chart-title">Context Usage</h2>
+        <p class="chart-description">This scatter plot shows the relationship between available context messages (x-axis) and used context messages (y-axis). Each point represents one conversation.</p>
+        <div class="chart-container">
+            <div id="loading-context-usage" class="loading">
                 <div class="spinner"></div>
-                <div>Loading prompt...</div>
+                <div>Loading chart data...</div>
             </div>
-            <pre id="prompt-content" class="prompt-text"></pre>
+            <canvas id="contextUsageChart"></canvas>
         </div>
     </div>
 
@@ -427,7 +478,13 @@
                 const response = await fetch('/dataset_stats');
                 const stats = await response.json();
                 
-                // Update the statistics tables (now includes context stats)
+                // Update dataset info at the top of the page
+                if (stats.dataset_info) {
+                    const datasetInfoElement = document.getElementById('dataset-info');
+                    datasetInfoElement.innerHTML = `Dataset: ${stats.dataset_info.dataset_id || 'Unknown'}<br>Conversations: ${stats.dataset_info.conversation_count || 0}`;
+                }
+                
+                // Update the statistics tables
                 updateStatsTables(stats);
                 
                 // Create the charts
@@ -435,6 +492,7 @@
                 createMessageLengthChart(stats.message_lengths);
                 createTokenDistChart(stats.message_lengths);
                 createUserCountChart(stats.user_counts);
+                createContextUsageChart(stats.context_stats);
                 
             } catch (error) {
                 console.error('Error fetching dataset statistics:', error);
@@ -456,14 +514,41 @@
             document.getElementById('msg-correlation').textContent = stats.message_counts.correlation.toFixed(3);
             
             // Character statistics
-            document.getElementById('orig-words-avg').textContent = stats.message_lengths.orig_words_avg.toFixed(2);
-            document.getElementById('synth-words-avg').textContent = stats.message_lengths.synth_words_avg.toFixed(2);
             document.getElementById('orig-chars-avg').textContent = stats.message_lengths.orig_chars_avg.toFixed(2);
             document.getElementById('synth-chars-avg').textContent = stats.message_lengths.synth_chars_avg.toFixed(2);
-            document.getElementById('orig-words-total').textContent = stats.message_lengths.orig_words_total.toLocaleString();
-            document.getElementById('synth-words-total').textContent = stats.message_lengths.synth_words_total.toLocaleString();
             document.getElementById('orig-chars-total').textContent = stats.message_lengths.orig_chars_total.toLocaleString();
             document.getElementById('synth-chars-total').textContent = stats.message_lengths.synth_chars_total.toLocaleString();
+            
+            // Calculate min/max character counts if available
+            const origCharMin = Math.min(...stats.message_lengths.orig_lengths);
+            const synthCharMin = Math.min(...stats.message_lengths.synth_lengths);
+            const origCharMax = Math.max(...stats.message_lengths.orig_lengths);
+            const synthCharMax = Math.max(...stats.message_lengths.synth_lengths);
+            
+            document.getElementById('orig-chars-min').textContent = origCharMin.toLocaleString();
+            document.getElementById('synth-chars-min').textContent = synthCharMin.toLocaleString();
+            document.getElementById('orig-chars-max').textContent = origCharMax.toLocaleString();
+            document.getElementById('synth-chars-max').textContent = synthCharMax.toLocaleString();
+            
+            // Calculate and display the character ratio (synthetic/original)
+            const charRatio = stats.message_lengths.orig_chars_total > 0 ? 
+                (stats.message_lengths.synth_chars_total / stats.message_lengths.orig_chars_total).toFixed(2) : '-';
+            document.getElementById('char-ratio').textContent = charRatio;
+            
+            // Content statistics (words)
+            document.getElementById('orig-words-avg').textContent = stats.message_lengths.orig_words_avg.toFixed(2);
+            document.getElementById('synth-words-avg').textContent = stats.message_lengths.synth_words_avg.toFixed(2);
+            document.getElementById('orig-words-total').textContent = stats.message_lengths.orig_words_total.toLocaleString();
+            document.getElementById('synth-words-total').textContent = stats.message_lengths.synth_words_total.toLocaleString();
+            
+            // Calculate words/char ratio
+            const origWordsCharRatio = stats.message_lengths.orig_chars_total > 0 ? 
+                (stats.message_lengths.orig_words_total / stats.message_lengths.orig_chars_total).toFixed(3) : '-';
+            const synthWordsCharRatio = stats.message_lengths.synth_chars_total > 0 ? 
+                (stats.message_lengths.synth_words_total / stats.message_lengths.synth_chars_total).toFixed(3) : '-';
+            
+            document.getElementById('orig-words-char-ratio').textContent = origWordsCharRatio;
+            document.getElementById('synth-words-char-ratio').textContent = synthWordsCharRatio;
             
             // Token statistics (estimated based on words)
             const origTokensAvg = stats.message_lengths.orig_words_avg * 1.3;
@@ -475,16 +560,31 @@
             const origTokensMedian = stats.message_lengths.orig_words_avg * 1.3; // Using avg as an approximation
             const synthTokensMedian = stats.message_lengths.synth_words_avg * 1.3; // Using avg as an approximation
             
+            // Calculate sum of all tokens across all conversations
+            const origTokensSum = origTokensTotal;
+            const synthTokensSum = synthTokensTotal;
+            
             document.getElementById('orig-tokens-avg').textContent = origTokensAvg.toFixed(2);
             document.getElementById('synth-tokens-avg').textContent = synthTokensAvg.toFixed(2);
             document.getElementById('orig-tokens-median').textContent = origTokensMedian.toFixed(2);
             document.getElementById('synth-tokens-median').textContent = synthTokensMedian.toFixed(2);
             document.getElementById('orig-tokens-total').textContent = origTokensTotal.toLocaleString();
             document.getElementById('synth-tokens-total').textContent = synthTokensTotal.toLocaleString();
+            document.getElementById('orig-tokens-sum').textContent = origTokensSum.toLocaleString();
+            document.getElementById('synth-tokens-sum').textContent = synthTokensSum.toLocaleString();
             
             // Calculate and display the token ratio (synthetic/original)
             const tokenRatio = origTokensTotal > 0 ? (synthTokensTotal / origTokensTotal).toFixed(2) : '-';
             document.getElementById('token-ratio').textContent = tokenRatio;
+            
+            // Calculate words/token ratio
+            const origWordsTokenRatio = origTokensTotal > 0 ? 
+                (stats.message_lengths.orig_words_total / origTokensTotal).toFixed(3) : '-';
+            const synthWordsTokenRatio = synthTokensTotal > 0 ? 
+                (stats.message_lengths.synth_words_total / synthTokensTotal).toFixed(3) : '-';
+            
+            document.getElementById('orig-words-token-ratio').textContent = origWordsTokenRatio;
+            document.getElementById('synth-words-token-ratio').textContent = synthWordsTokenRatio;
             
             // Run statistical tests
             try {
@@ -535,39 +635,59 @@
                 document.getElementById('mw-message-result').textContent = 'Error';
             }
             
-            // Add context statistics if available
-            if (stats.context_stats && stats.context_stats.messages_used && stats.context_stats.messages_used.length > 0) {
-                // Calculate min/max values
-                const minMessagesUsed = Math.min(...stats.context_stats.messages_used);
-                const maxMessagesUsed = Math.max(...stats.context_stats.messages_used);
-                const minMessagesTotal = Math.min(...stats.context_stats.messages_total);
-                const maxMessagesTotal = Math.max(...stats.context_stats.messages_total);
+            // Add context statistics
+            if (stats.context_stats) {
+                // Get values from the context stats
+                const msgUsed = stats.context_stats.used_avg ? stats.context_stats.used_avg.toFixed(2) : 'N/A';
+                const msgAvail = stats.context_stats.avail_avg ? stats.context_stats.avail_avg.toFixed(2) : 'N/A';
+                const tokensUsed = stats.context_stats.tokens_used_avg ? stats.context_stats.tokens_used_avg.toFixed(2) : 'N/A';
                 
-                // Get averages
-                const avgMessagesUsed = stats.context_stats.avg_messages_used;
-                const avgMessagesTotal = stats.context_stats.avg_messages_total;
-                const avgTokensUsed = stats.context_stats.avg_tokens_used;
-                const avgMaxTokens = stats.context_stats.avg_max_tokens;
+                // Get min values
+                const msgUsedMin = stats.context_stats.used_min !== undefined ? stats.context_stats.used_min : 'N/A';
+                const msgAvailMin = stats.context_stats.avail_min !== undefined ? stats.context_stats.avail_min : 'N/A';
+                const tokensUsedMin = stats.context_stats.tokens_used_min !== undefined ? stats.context_stats.tokens_used_min : 'N/A';
                 
-                // Calculate ratios
-                const msgRatio = (avgMessagesUsed / avgMessagesTotal * 100).toFixed(2) + '%';
-                const tokenRatio = (avgTokensUsed / avgMaxTokens * 100).toFixed(2) + '%';
+                // Get max values
+                const msgUsedMax = stats.context_stats.used_max !== undefined ? stats.context_stats.used_max : 'N/A';
+                const msgAvailMax = stats.context_stats.avail_max !== undefined ? stats.context_stats.avail_max : 'N/A';
+                const tokensUsedMax = stats.context_stats.tokens_used_max !== undefined ? stats.context_stats.tokens_used_max : 'N/A';
+                
+                // Calculate sum values
+                const msgUsedSum = stats.context_stats.used_sum !== undefined ? 
+                    stats.context_stats.used_sum.toLocaleString() : 
+                    (stats.context_stats.used_avg && stats.dataset_info.conversation_count ? 
+                        Math.round(stats.context_stats.used_avg * stats.dataset_info.conversation_count).toLocaleString() : 'N/A');
+                
+                const msgAvailSum = stats.context_stats.avail_sum !== undefined ? 
+                    stats.context_stats.avail_sum.toLocaleString() : 
+                    (stats.context_stats.avail_avg && stats.dataset_info.conversation_count ? 
+                        Math.round(stats.context_stats.avail_avg * stats.dataset_info.conversation_count).toLocaleString() : 'N/A');
+                
+                const tokensUsedSum = stats.context_stats.tokens_used_sum !== undefined ? 
+                    stats.context_stats.tokens_used_sum.toLocaleString() : 
+                    (stats.context_stats.tokens_used_avg && stats.dataset_info.conversation_count ? 
+                        Math.round(stats.context_stats.tokens_used_avg * stats.dataset_info.conversation_count).toLocaleString() : 'N/A');
                 
                 // Update the context statistics table
-                document.getElementById('context-msg-used-avg').textContent = avgMessagesUsed.toFixed(2);
-                document.getElementById('context-msg-avail-avg').textContent = avgMessagesTotal.toFixed(2);
-                document.getElementById('context-msg-ratio').textContent = msgRatio;
+                document.getElementById('context-msg-used-avg').textContent = msgUsed;
+                document.getElementById('context-msg-avail-avg').textContent = msgAvail;
+                document.getElementById('context-msg-used-min').textContent = msgUsedMin;
+                document.getElementById('context-msg-avail-min').textContent = msgAvailMin;
+                document.getElementById('context-msg-used-max').textContent = msgUsedMax;
+                document.getElementById('context-msg-avail-max').textContent = msgAvailMax;
+                document.getElementById('context-msg-used-sum').textContent = msgUsedSum;
+                document.getElementById('context-msg-avail-sum').textContent = msgAvailSum;
                 
-                document.getElementById('context-msg-used-min').textContent = minMessagesUsed;
-                document.getElementById('context-msg-avail-min').textContent = minMessagesTotal;
-                
-                document.getElementById('context-msg-used-max').textContent = maxMessagesUsed;
-                document.getElementById('context-msg-avail-max').textContent = maxMessagesTotal;
-                
-                document.getElementById('context-token-used-avg').textContent = avgTokensUsed.toFixed(2);
-                document.getElementById('context-token-avail-avg').textContent = avgMaxTokens.toFixed(2);
-                document.getElementById('context-token-ratio').textContent = tokenRatio;
+                document.getElementById('context-token-used-avg').textContent = tokensUsed;
+                document.getElementById('context-token-avail-avg').textContent = 'N/A';
+                document.getElementById('context-token-used-min').textContent = tokensUsedMin;
+                document.getElementById('context-token-avail-min').textContent = 'N/A';
+                document.getElementById('context-token-used-max').textContent = tokensUsedMax;
+                document.getElementById('context-token-avail-max').textContent = 'N/A';
+                document.getElementById('context-token-used-sum').textContent = tokensUsedSum;
+                document.getElementById('context-token-avail-sum').textContent = 'N/A';
             } else {
+                console.log("No context stats available, showing N/A");
                 // If no context stats available, show "N/A"
                 const contextCells = document.querySelectorAll('#context-stats-table td:not(:first-child)');
                 contextCells.forEach(cell => {
@@ -1129,6 +1249,106 @@
                 z: z,
                 significant: Math.abs(z) > 1.96 // 95% confidence
             };
+        }
+        
+        // Function to create the context usage chart
+        function createContextUsageChart(contextStats) {
+            const ctx = document.getElementById('contextUsageChart').getContext('2d');
+            
+            // Hide loading indicator
+            document.getElementById('loading-context-usage').style.display = 'none';
+            
+            // Prepare data for scatter plot
+            const scatterData = [];
+            
+            console.log("Context stats for chart:", contextStats);
+            
+            // Check if we have the necessary arrays
+            if (contextStats.used_counts && contextStats.avail_counts && 
+                contextStats.used_counts.length === contextStats.avail_counts.length) {
+                
+                for (let i = 0; i < contextStats.used_counts.length; i++) {
+                    // Only add points where at least one value is non-zero
+                    if (contextStats.used_counts[i] > 0 || contextStats.avail_counts[i] > 0) {
+                        scatterData.push({
+                            x: contextStats.avail_counts[i],
+                            y: contextStats.used_counts[i]
+                        });
+                    }
+                }
+                
+                console.log(`Found ${scatterData.length} non-zero context points out of ${contextStats.used_counts.length} total`);
+            }
+            
+            // Create scatter plot
+            new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Context Usage',
+                        data: scatterData,
+                        backgroundColor: 'rgba(119, 41, 83, 0.6)',
+                        borderColor: 'rgba(119, 41, 83, 1)',
+                        borderWidth: 1,
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Available Context Messages',
+                                color: '#E95420',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                color: '#FFF'
+                            },
+                            grid: {
+                                color: 'rgba(119, 41, 83, 0.3)'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Used Context Messages',
+                                color: '#E95420',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                color: '#FFF'
+                            },
+                            grid: {
+                                color: 'rgba(119, 41, 83, 0.3)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#FFF'
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Available: ${context.raw.x}, Used: ${context.raw.y}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
         }
         
         // Initialize

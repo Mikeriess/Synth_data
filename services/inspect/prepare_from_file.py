@@ -32,6 +32,16 @@ def prepare_inspection_data_from_file(input_file: str, output_file: str = "conve
                 'orig_messages': item['orig_messages'],
                 'synthetic_messages': item['synthetic_messages']
             }
+            
+            # Copy context statistics if available
+            context_fields = [
+                'context_msg_used', 'context_msg_available',
+                'context_tokens_used', 'context_tokens_available'
+            ]
+            
+            for field in context_fields:
+                if field in item:
+                    conversation[field] = item[field]
         else:
             # Create a conversation ID if not present
             conversation_id = item.get('id', f"conv_{i}_{uuid.uuid4().hex[:8]}")

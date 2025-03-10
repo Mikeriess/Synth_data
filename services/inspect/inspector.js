@@ -156,9 +156,17 @@ function createMessageHTML(message, isSynthetic = false) {
         return '<div class="message"><p>Error: Invalid message format</p></div>';
     }
 
+    // Get the user ID from either 'user' or 'poster_id' field
+    let userId = message.user || message.poster_id || 'Unknown';
+    
+    // Convert float user IDs to integers if needed
+    if (typeof userId === 'number') {
+        userId = Math.floor(userId);
+    }
+
     return `
         <div class="message ${isSynthetic ? 'synthetic-message' : ''}">
-            <strong>Person ${message.user || 'Unknown'}</strong>
+            <strong>Person ${userId}</strong>
             <p>${message.text || message.content || 'No content available'}</p>
         </div>
     `;

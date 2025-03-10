@@ -47,20 +47,43 @@ def process_dataset(dataset_id, config=None, split="train", max_samples=None, ou
     # Convert dataset to the format expected by the annotation tool
     processed_data = []
     
+    # Print dataset features to help with debugging
+    print(f"Dataset features: {dataset.features}")
+    
     for i, item in enumerate(dataset):
+        # Convert item to dict for easier access
+        item_dict = dict(item)
+        
         # This conversion will depend on the exact format needed by your annotation tool
         # For conversation datasets, try to extract the relevant fields
-        if 'orig_messages' in item and 'synthetic_messages' in item:
+        if 'orig_messages' in item_dict and 'synthetic_messages' in item_dict:
             # If the dataset already has the right format, use it directly
             processed_item = {
                 'id': f"{dataset_id.replace('/', '_')}_{i}",
-                'conversation_id': item.get('conversation_id', f"conv_{i}"),
-                'orig_messages': item['orig_messages'],
-                'synthetic_messages': item['synthetic_messages']
+                'conversation_id': item_dict.get('conversation_id', f"conv_{i}"),
+                'orig_messages': item_dict['orig_messages'],
+                'synthetic_messages': item_dict['synthetic_messages']
             }
+            
+            # Extract context statistics if available
+            context_fields = [
+                'context_msg_used', 'context_msg_available',
+                'context_tokens_used', 'context_tokens_available'
+            ]
+            
+            for field in context_fields:
+                if field in item_dict:
+                    processed_item[field] = item_dict[field]
+            
+            # If context fields aren't directly available, try to extract from metadata
+            if 'metadata' in item_dict and isinstance(item_dict['metadata'], dict):
+                metadata = item_dict['metadata']
+                for field in context_fields:
+                    if field in metadata and field not in processed_item:
+                        processed_item[field] = metadata[field]
         else:
             # Otherwise, create a generic item with the text content
-            text = item.get('text', '') or item.get('sentence', '') or str(item)
+            text = item_dict.get('text', '') or item_dict.get('sentence', '') or str(item_dict)
             processed_item = {
                 'id': f"{dataset_id.replace('/', '_')}_{i}",
                 'text': text
