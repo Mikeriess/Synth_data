@@ -17,5 +17,9 @@ EXPOSE 8000
 # Make the server accessible on all network interfaces
 ENV HOST=0.0.0.0
 
-# Run the server
-CMD ["python", "services/inspect/server.py"] 
+# Login to Hugging Face if token is provided
+CMD if [ -n "$HUGGING_FACE_HUB_TOKEN" ]; then \
+        echo "Logging in to Hugging Face Hub"; \
+        python -c "from huggingface_hub import login; login('$HUGGING_FACE_HUB_TOKEN')"; \
+    fi && \
+    python services/inspect/server.py 

@@ -12,6 +12,7 @@ services:
       - ../../:/workspace
     environment:
       - HOST=0.0.0.0
+      - HUGGING_FACE_HUB_TOKEN=${HUGGING_FACE_HUB_TOKEN}
     env_file:
       - ./.env  # Load environment variables from .env file
     restart: unless-stopped 
