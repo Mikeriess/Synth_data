@@ -148,101 +148,6 @@
 
     <div id="dataset-info" class="dataset-info">Loading dataset information...</div>
 
-    <div class="chart-section">
-        <h2 class="chart-title">Context Statistics</h2>
-        <p class="chart-description">Statistics about the context used for generation</p>
-        
-        <div class="stats-container">
-            <div class="stats-card">
-                <h3>Messages Used</h3>
-                <div id="messages-used-stats">Loading...</div>
-            </div>
-            <div class="stats-card">
-                <h3>Token Usage</h3>
-                <div id="token-usage-stats">Loading...</div>
-            </div>
-        </div>
-        
-        <div class="stats-container">
-            <div class="stats-card">
-                <h3>Context Utilization</h3>
-                <table class="stats-table">
-                    <thead>
-                        <tr>
-                            <th>Metric</th>
-                            <th>Average</th>
-                            <th>Min</th>
-                            <th>Max</th>
-                        </tr>
-                    </thead>
-                    <tbody id="context-utilization-stats">
-                        <tr><td colspan="4">Loading...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        
-        <div class="chart-container">
-            <canvas id="context-stats-chart"></canvas>
-        </div>
-    </div>
-
-    <div class="stats-container">
-        <div class="stats-card">
-            <h2 class="chart-title">Context Usage Statistics</h2>
-            <table id="context-summary-stats">
-                <tr>
-                    <th>Metric</th>
-                    <th>Messages Used</th>
-                    <th>Messages Available</th>
-                    <th>Usage %</th>
-                </tr>
-                <tr>
-                    <td>Average</td>
-                    <td id="context-msg-used-avg">-</td>
-                    <td id="context-msg-avail-avg">-</td>
-                    <td id="context-msg-usage-pct">-</td>
-                </tr>
-                <tr>
-                    <td>Minimum</td>
-                    <td id="context-msg-used-min">-</td>
-                    <td id="context-msg-avail-min">-</td>
-                    <td id="context-msg-usage-min-pct">-</td>
-                </tr>
-                <tr>
-                    <td>Maximum</td>
-                    <td id="context-msg-used-max">-</td>
-                    <td id="context-msg-avail-max">-</td>
-                    <td id="context-msg-usage-max-pct">-</td>
-                </tr>
-                <tr>
-                    <th>Metric</th>
-                    <th>Tokens Used</th>
-                    <th>Tokens Available</th>
-                    <th>Usage %</th>
-                </tr>
-                <tr>
-                    <td>Average</td>
-                    <td id="context-token-used-avg">-</td>
-                    <td id="context-token-avail-avg">-</td>
-                    <td id="context-token-usage-pct">-</td>
-                </tr>
-                <tr>
-                    <td>Minimum</td>
-                    <td id="context-token-used-min">-</td>
-                    <td id="context-token-avail-min">-</td>
-                    <td id="context-token-usage-min-pct">-</td>
-                </tr>
-                <tr>
-                    <td>Maximum</td>
-                    <td id="context-token-used-max">-</td>
-                    <td id="context-token-avail-max">-</td>
-                    <td id="context-token-usage-max-pct">-</td>
-                </tr>
-            </table>
-        </div>
-    </div>
-
     <div class="stats-container">
         <div class="stats-card">
             <h2 class="chart-title">Post Count Statistics</h2>
@@ -253,22 +158,22 @@
                     <th>Synthetic</th>
                 </tr>
                 <tr>
-                    <td>Average Posts/Thread</td>
+                    <td>Average</td>
                     <td id="orig-msg-avg">-</td>
                     <td id="synth-msg-avg">-</td>
                 </tr>
                 <tr>
-                    <td>Median Posts/Thread</td>
+                    <td>Median</td>
                     <td id="orig-msg-median">-</td>
                     <td id="synth-msg-median">-</td>
                 </tr>
                 <tr>
-                    <td>Min Posts</td>
+                    <td>Min</td>
                     <td id="orig-msg-min">-</td>
                     <td id="synth-msg-min">-</td>
                 </tr>
                 <tr>
-                    <td>Max Posts</td>
+                    <td>Max</td>
                     <td id="orig-msg-max">-</td>
                     <td id="synth-msg-max">-</td>
                 </tr>
@@ -278,9 +183,10 @@
                 </tr>
             </table>
         </div>
+        
         <div class="stats-card">
-            <h2 class="chart-title">Character Statistics</h2>
-            <table id="char-stats">
+            <h2 class="chart-title">Content Statistics</h2>
+            <table id="content-stats">
                 <tr>
                     <th>Metric</th>
                     <th>Original</th>
@@ -308,69 +214,138 @@
                 </tr>
             </table>
         </div>
+        
         <div class="stats-card">
-            <h2 class="chart-title">Token Statistics</h2>
-            <table id="token-stats">
+            <h2 class="chart-title">Context Statistics</h2>
+            <table id="context-stats-table">
                 <tr>
                     <th>Metric</th>
-                    <th>Original</th>
-                    <th>Synthetic</th>
+                    <th>Used</th>
+                    <th>Available</th>
+                    <th>Ratio</th>
                 </tr>
                 <tr>
-                    <td>Avg Tokens/Post</td>
-                    <td id="orig-tokens-avg">-</td>
-                    <td id="synth-tokens-avg">-</td>
+                    <td>Messages (Avg)</td>
+                    <td id="context-msg-used-avg">-</td>
+                    <td id="context-msg-avail-avg">-</td>
+                    <td id="context-msg-ratio">-</td>
                 </tr>
                 <tr>
-                    <td>Median Tokens/Post</td>
-                    <td id="orig-tokens-median">-</td>
-                    <td id="synth-tokens-median">-</td>
+                    <td>Messages (Min)</td>
+                    <td id="context-msg-used-min">-</td>
+                    <td id="context-msg-avail-min">-</td>
+                    <td>-</td>
                 </tr>
                 <tr>
-                    <td>Total Tokens</td>
-                    <td id="orig-tokens-total">-</td>
-                    <td id="synth-tokens-total">-</td>
+                    <td>Messages (Max)</td>
+                    <td id="context-msg-used-max">-</td>
+                    <td id="context-msg-avail-max">-</td>
+                    <td>-</td>
                 </tr>
                 <tr>
-                    <td>Total Token Ratio (Synth/Orig)</td>
-                    <td colspan="2" id="token-ratio">-</td>
+                    <td>Tokens (Avg)</td>
+                    <td id="context-token-used-avg">-</td>
+                    <td id="context-token-avail-avg">-</td>
+                    <td id="context-token-ratio">-</td>
                 </tr>
             </table>
         </div>
-        <div class="stats-card">
-            <h2 class="chart-title">Distribution Comparison Tests</h2>
-            <table id="stat-tests">
-                <tr>
-                    <th>Metric</th>
-                    <th>Test</th>
-                    <th>Result</th>
-                    <th>Significant?</th>
-                </tr>
-                <tr>
-                    <td rowspan="2">Post Counts</td>
-                    <td>Kolmogorov-Smirnov</td>
-                    <td id="ks-message-result">-</td>
-                    <td id="ks-message-sig">-</td>
-                </tr>
-                <tr>
-                    <td>Mann-Whitney U</td>
-                    <td id="mw-message-result">-</td>
-                    <td id="mw-message-sig">-</td>
-                </tr>
-                <tr>
-                    <td>Character Counts</td>
-                    <td>Kolmogorov-Smirnov</td>
-                    <td id="ks-char-result">-</td>
-                    <td id="ks-char-sig">-</td>
-                </tr>
-                <tr>
-                    <td>Length Distribution</td>
-                    <td>Chi-Square</td>
-                    <td id="chi-length-result">-</td>
-                    <td id="chi-length-sig">-</td>
-                </tr>
-            </table>
-        </div>
+    </div>
+
+    <div class="chart-section">
+        <h2 class="chart-title">Character Statistics</h2>
+        <table id="char-stats">
+            <tr>
+                <th>Metric</th>
+                <th>Original</th>
+                <th>Synthetic</th>
+            </tr>
+            <tr>
+                <td>Avg Words/Post</td>
+                <td id="orig-words-avg">-</td>
+                <td id="synth-words-avg">-</td>
+            </tr>
+            <tr>
+                <td>Avg Chars/Post</td>
+                <td id="orig-chars-avg">-</td>
+                <td id="synth-chars-avg">-</td>
+            </tr>
+            <tr>
+                <td>Total Words</td>
+                <td id="orig-words-total">-</td>
+                <td id="synth-words-total">-</td>
+            </tr>
+            <tr>
+                <td>Total Chars</td>
+                <td id="orig-chars-total">-</td>
+                <td id="synth-chars-total">-</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="chart-section">
+        <h2 class="chart-title">Token Statistics</h2>
+        <table id="token-stats">
+            <tr>
+                <th>Metric</th>
+                <th>Original</th>
+                <th>Synthetic</th>
+            </tr>
+            <tr>
+                <td>Avg Tokens/Post</td>
+                <td id="orig-tokens-avg">-</td>
+                <td id="synth-tokens-avg">-</td>
+            </tr>
+            <tr>
+                <td>Median Tokens/Post</td>
+                <td id="orig-tokens-median">-</td>
+                <td id="synth-tokens-median">-</td>
+            </tr>
+            <tr>
+                <td>Total Tokens</td>
+                <td id="orig-tokens-total">-</td>
+                <td id="synth-tokens-total">-</td>
+            </tr>
+            <tr>
+                <td>Total Token Ratio (Synth/Orig)</td>
+                <td colspan="2" id="token-ratio">-</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="chart-section">
+        <h2 class="chart-title">Distribution Comparison Tests</h2>
+        <table id="stat-tests">
+            <tr>
+                <th>Metric</th>
+                <th>Test</th>
+                <th>Result</th>
+                <th>Significant?</th>
+            </tr>
+            <tr>
+                <td rowspan="2">Post Counts</td>
+                <td>Kolmogorov-Smirnov</td>
+                <td id="ks-message-result">-</td>
+                <td id="ks-message-sig">-</td>
+            </tr>
+            <tr>
+                <td>Mann-Whitney U</td>
+                <td id="mw-message-result">-</td>
+                <td id="mw-message-sig">-</td>
+            </tr>
+            <tr>
+                <td>Character Counts</td>
+                <td>Kolmogorov-Smirnov</td>
+                <td id="ks-char-result">-</td>
+                <td id="ks-char-sig">-</td>
+            </tr>
+            <tr>
+                <td>Length Distribution</td>
+                <td>Chi-Square</td>
+                <td id="chi-length-result">-</td>
+                <td id="chi-length-sig">-</td>
+            </tr>
+        </table>
     </div>
 
     <div class="chart-section">
@@ -452,23 +427,18 @@
                 const response = await fetch('/dataset_stats');
                 const stats = await response.json();
                 
-                // Update the statistics tables
+                // Update the statistics tables (now includes context stats)
                 updateStatsTables(stats);
                 
-                // Process context statistics
-                processContextStats(stats);
+                // Create the charts
+                createMessageCountChart(stats.message_counts);
+                createMessageLengthChart(stats.message_lengths);
+                createTokenDistChart(stats.message_lengths);
+                createUserCountChart(stats.user_counts);
                 
-                // Create charts
-                createCharts(stats);
-                
-                // Update dataset info
-                updateDatasetInfo(stats);
-                
-                // Hide loading indicators
-                hideLoading();
             } catch (error) {
                 console.error('Error fetching dataset statistics:', error);
-                document.getElementById('dataset-info').innerHTML = `<p class="error">Error loading dataset statistics: ${error.message}</p>`;
+                document.getElementById('dataset-info').textContent = `Error: ${error.message}`;
             }
         }
         
@@ -564,42 +534,65 @@
                 document.getElementById('chi-length-result').textContent = 'Error';
                 document.getElementById('mw-message-result').textContent = 'Error';
             }
-        }
-        
-        // Function to create charts based on dataset statistics
-        function createCharts(stats) {
-            // Create message count scatter plot
-            createMessageCountScatter(stats.message_counts.scatter_data);
             
-            // Create message length histograms
-            createMessageLengthHistograms(stats.message_lengths);
-            
-            // Create token distribution chart
-            createTokenDistChart(stats.message_lengths);
-            
-            // Create user count chart
-            createUserCountChart(stats.user_counts);
-            
-            // Create context stats chart if available
+            // Add context statistics if available
             if (stats.context_stats && stats.context_stats.messages_used && stats.context_stats.messages_used.length > 0) {
-                createContextStatsChart(stats.context_stats);
+                // Calculate min/max values
+                const minMessagesUsed = Math.min(...stats.context_stats.messages_used);
+                const maxMessagesUsed = Math.max(...stats.context_stats.messages_used);
+                const minMessagesTotal = Math.min(...stats.context_stats.messages_total);
+                const maxMessagesTotal = Math.max(...stats.context_stats.messages_total);
+                
+                // Get averages
+                const avgMessagesUsed = stats.context_stats.avg_messages_used;
+                const avgMessagesTotal = stats.context_stats.avg_messages_total;
+                const avgTokensUsed = stats.context_stats.avg_tokens_used;
+                const avgMaxTokens = stats.context_stats.avg_max_tokens;
+                
+                // Calculate ratios
+                const msgRatio = (avgMessagesUsed / avgMessagesTotal * 100).toFixed(2) + '%';
+                const tokenRatio = (avgTokensUsed / avgMaxTokens * 100).toFixed(2) + '%';
+                
+                // Update the context statistics table
+                document.getElementById('context-msg-used-avg').textContent = avgMessagesUsed.toFixed(2);
+                document.getElementById('context-msg-avail-avg').textContent = avgMessagesTotal.toFixed(2);
+                document.getElementById('context-msg-ratio').textContent = msgRatio;
+                
+                document.getElementById('context-msg-used-min').textContent = minMessagesUsed;
+                document.getElementById('context-msg-avail-min').textContent = minMessagesTotal;
+                
+                document.getElementById('context-msg-used-max').textContent = maxMessagesUsed;
+                document.getElementById('context-msg-avail-max').textContent = maxMessagesTotal;
+                
+                document.getElementById('context-token-used-avg').textContent = avgTokensUsed.toFixed(2);
+                document.getElementById('context-token-avail-avg').textContent = avgMaxTokens.toFixed(2);
+                document.getElementById('context-token-ratio').textContent = tokenRatio;
+            } else {
+                // If no context stats available, show "N/A"
+                const contextCells = document.querySelectorAll('#context-stats-table td:not(:first-child)');
+                contextCells.forEach(cell => {
+                    cell.textContent = 'N/A';
+                });
             }
         }
         
-        // Function to create message count scatter plot
-        function createMessageCountScatter(scatterData) {
+        // Function to create the message count chart
+        function createMessageCountChart(data) {
             const ctx = document.getElementById('messageCountChart').getContext('2d');
             
             // Hide loading indicator
             document.getElementById('loading-msg-count').style.display = 'none';
             
+            // Create scatter plot
             new Chart(ctx, {
                 type: 'scatter',
                 data: {
                     datasets: [{
                         label: 'Conversations',
-                        data: scatterData,
-                        backgroundColor: '#E95420',
+                        data: data.scatter_data,
+                        backgroundColor: 'rgba(233, 84, 32, 0.6)',
+                        borderColor: 'rgba(233, 84, 32, 1)',
+                        borderWidth: 1,
                         pointRadius: 5,
                         pointHoverRadius: 7
                     }]
@@ -607,51 +600,53 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Number of Posts in Original Conversation',
+                                color: '#E95420',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                color: '#FFF'
+                            },
+                            grid: {
+                                color: 'rgba(119, 41, 83, 0.3)'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Number of Posts in Synthetic Conversation',
+                                color: '#E95420',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                color: '#FFF'
+                            },
+                            grid: {
+                                color: 'rgba(119, 41, 83, 0.3)'
+                            }
+                        }
+                    },
                     plugins: {
-                        title: {
-                            display: true,
-                            text: 'Original vs. Synthetic Post Counts',
-                            color: '#FFF'
+                        legend: {
+                            labels: {
+                                color: '#FFF'
+                            }
                         },
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
-                                    const point = context.raw;
-                                    return `Conversation ID: ${point.id}, Original: ${point.x}, Synthetic: ${point.y}`;
+                                    return `Conversation ID: ${context.raw.id}, Original: ${context.raw.x} posts, Synthetic: ${context.raw.y} posts`;
                                 }
-                            }
-                        },
-                        legend: {
-                            labels: {
-                                color: '#FFF'
-                            }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'Original Post Count',
-                                color: '#FFF'
-                            },
-                            ticks: {
-                                color: '#FFF'
-                            },
-                            grid: {
-                                color: '#772953'
-                            }
-                        },
-                        y: {
-                            title: {
-                                display: true,
-                                text: 'Synthetic Post Count',
-                                color: '#FFF'
-                            },
-                            ticks: {
-                                color: '#FFF'
-                            },
-                            grid: {
-                                color: '#772953'
                             }
                         }
                     }
@@ -659,75 +654,94 @@
             });
         }
         
-        // Function to create message length histograms
-        function createMessageLengthHistograms(lengthData) {
+        // Function to create the message length chart
+        function createMessageLengthChart(data) {
+            const ctx = document.getElementById('messageLengthChart').getContext('2d');
+            
             // Hide loading indicator
             document.getElementById('loading-msg-length').style.display = 'none';
             
-            // Create histograms for character lengths
-            const charLengths = {
-                orig: lengthData.orig_lengths,
-                synth: lengthData.synth_lengths
-            };
-            
-            const charCtx = document.getElementById('messageLengthChart').getContext('2d');
-            new Chart(charCtx, {
+            // Create histogram
+            new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: ['0-50', '51-100', '101-200', '201-300', '301-500', '501-1000', '1000+'],
+                    labels: data.bins.map(bin => `${bin}-${bin+50}`),
                     datasets: [
                         {
                             label: 'Original Posts',
-                            data: createHistogram(charLengths.orig, [0, 50, 100, 200, 300, 500, 1000, Infinity]),
-                            backgroundColor: '#E95420'
+                            data: data.orig_hist,
+                            backgroundColor: 'rgba(53, 162, 235, 0.5)',
+                            borderColor: 'rgba(53, 162, 235, 1)',
+                            borderWidth: 1
                         },
                         {
                             label: 'Synthetic Posts',
-                            data: createHistogram(charLengths.synth, [0, 50, 100, 200, 300, 500, 1000, Infinity]),
-                            backgroundColor: '#77216F'
+                            data: data.synth_hist,
+                            backgroundColor: 'rgba(233, 84, 32, 0.5)',
+                            borderColor: 'rgba(233, 84, 32, 1)',
+                            borderWidth: 1
                         }
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: 'Message Length Distribution (Characters)',
-                            color: '#FFF'
-                        },
-                        legend: {
-                            labels: {
-                                color: '#FFF'
-                            }
-                        }
-                    },
                     scales: {
                         x: {
                             title: {
                                 display: true,
-                                text: 'Character Count',
-                                color: '#FFF'
+                                text: 'Characters per Post',
+                                color: '#E95420',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
                             },
                             ticks: {
-                                color: '#FFF'
+                                color: '#FFF',
+                                callback: function(value, index) {
+                                    // Show fewer labels for readability
+                                    return index % 4 === 0 ? this.getLabelForValue(value) : '';
+                                }
                             },
                             grid: {
-                                color: '#772953'
+                                color: 'rgba(119, 41, 83, 0.3)'
                             }
                         },
                         y: {
                             title: {
                                 display: true,
                                 text: 'Number of Posts',
-                                color: '#FFF'
+                                color: '#E95420',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
                             },
                             ticks: {
                                 color: '#FFF'
                             },
                             grid: {
-                                color: '#772953'
+                                color: 'rgba(119, 41, 83, 0.3)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#FFF'
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                title: function(tooltipItems) {
+                                    const item = tooltipItems[0];
+                                    const bin = data.bins[item.dataIndex];
+                                    return `${bin}-${bin+50} characters`;
+                                },
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.raw} posts`;
+                                }
                             }
                         }
                     }
@@ -735,75 +749,117 @@
             });
         }
         
-        // Function to create token distribution chart
-        function createTokenDistChart(lengthData) {
+        // Function to create the token distribution chart
+        function createTokenDistChart(data) {
+            const ctx = document.getElementById('tokenDistChart').getContext('2d');
+            
             // Hide loading indicator
             document.getElementById('loading-token-dist').style.display = 'none';
             
-            // Create histograms for word counts (approximation of tokens)
-            const wordCounts = {
-                orig: lengthData.orig_words,
-                synth: lengthData.synth_words
-            };
+            // Create token bins (0-25, 25-50, etc.)
+            const tokenBins = Array.from({length: 20}, (_, i) => i * 25);
             
-            const tokenCtx = document.getElementById('tokenDistChart').getContext('2d');
-            new Chart(tokenCtx, {
+            // Create histograms for tokens (estimated based on word counts)
+            // In a real implementation, you would use actual token counts from the server
+            const origTokenCounts = data.orig_words.map(count => Math.round(count * 1.3));
+            const synthTokenCounts = data.synth_words.map(count => Math.round(count * 1.3));
+            
+            // Create histograms
+            const origTokenHist = new Array(20).fill(0);
+            const synthTokenHist = new Array(20).fill(0);
+            
+            // Fill histograms
+            origTokenCounts.forEach(count => {
+                const binIndex = Math.min(Math.floor(count / 25), 19);
+                origTokenHist[binIndex]++;
+            });
+            
+            synthTokenCounts.forEach(count => {
+                const binIndex = Math.min(Math.floor(count / 25), 19);
+                synthTokenHist[binIndex]++;
+            });
+            
+            // Create histogram for tokens
+            new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: ['0-10', '11-25', '26-50', '51-100', '101-200', '201-300', '300+'],
+                    labels: tokenBins.map(bin => `${bin}-${bin+25}`),
                     datasets: [
                         {
                             label: 'Original Posts',
-                            data: createHistogram(wordCounts.orig, [0, 10, 25, 50, 100, 200, 300, Infinity]),
-                            backgroundColor: '#E95420'
+                            data: origTokenHist,
+                            backgroundColor: 'rgba(53, 162, 235, 0.5)',
+                            borderColor: 'rgba(53, 162, 235, 1)',
+                            borderWidth: 1
                         },
                         {
                             label: 'Synthetic Posts',
-                            data: createHistogram(wordCounts.synth, [0, 10, 25, 50, 100, 200, 300, Infinity]),
-                            backgroundColor: '#77216F'
+                            data: synthTokenHist,
+                            backgroundColor: 'rgba(233, 84, 32, 0.5)',
+                            borderColor: 'rgba(233, 84, 32, 1)',
+                            borderWidth: 1
                         }
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: 'Token Distribution (Word Count)',
-                            color: '#FFF'
-                        },
-                        legend: {
-                            labels: {
-                                color: '#FFF'
-                            }
-                        }
-                    },
                     scales: {
                         x: {
                             title: {
                                 display: true,
-                                text: 'Word Count',
-                                color: '#FFF'
+                                text: 'Tokens per Post',
+                                color: '#E95420',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
                             },
                             ticks: {
-                                color: '#FFF'
+                                color: '#FFF',
+                                callback: function(value, index) {
+                                    // Show fewer labels for readability
+                                    return index % 2 === 0 ? this.getLabelForValue(value) : '';
+                                }
                             },
                             grid: {
-                                color: '#772953'
+                                color: 'rgba(119, 41, 83, 0.3)'
                             }
                         },
                         y: {
                             title: {
                                 display: true,
                                 text: 'Number of Posts',
-                                color: '#FFF'
+                                color: '#E95420',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
                             },
                             ticks: {
                                 color: '#FFF'
                             },
                             grid: {
-                                color: '#772953'
+                                color: 'rgba(119, 41, 83, 0.3)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#FFF'
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                title: function(tooltipItems) {
+                                    const item = tooltipItems[0];
+                                    const bin = tokenBins[item.dataIndex];
+                                    return `${bin}-${bin+25} tokens`;
+                                },
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.raw} posts`;
+                                }
                             }
                         }
                     }
@@ -811,131 +867,90 @@
             });
         }
         
-        // Function to create user count chart
-        function createUserCountChart(userCounts) {
+        // Function to create the user count chart
+        function createUserCountChart(data) {
+            const ctx = document.getElementById('userCountChart').getContext('2d');
+            
             // Hide loading indicator
             document.getElementById('loading-user-count').style.display = 'none';
             
-            const userCtx = document.getElementById('userCountChart').getContext('2d');
-            new Chart(userCtx, {
+            // Create bar chart
+            new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: ['1', '2', '3', '4', '5', '6+'],
+                    labels: ['1 user', '2 users', '3 users', '4 users', '5 users', '6+ users'],
                     datasets: [
                         {
                             label: 'Original Conversations',
-                            data: userCounts.orig_counts,
-                            backgroundColor: '#E95420'
+                            data: data.orig_counts,
+                            backgroundColor: 'rgba(53, 162, 235, 0.5)',
+                            borderColor: 'rgba(53, 162, 235, 1)',
+                            borderWidth: 1
                         },
                         {
                             label: 'Synthetic Conversations',
-                            data: userCounts.synth_counts,
-                            backgroundColor: '#77216F'
+                            data: data.synth_counts,
+                            backgroundColor: 'rgba(233, 84, 32, 0.5)',
+                            borderColor: 'rgba(233, 84, 32, 1)',
+                            borderWidth: 1
                         }
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: 'Number of Unique Users per Conversation',
-                            color: '#FFF'
-                        },
-                        legend: {
-                            labels: {
-                                color: '#FFF'
-                            }
-                        }
-                    },
                     scales: {
                         x: {
                             title: {
                                 display: true,
-                                text: 'Number of Users',
-                                color: '#FFF'
+                                text: 'Number of Unique Users per Conversation Thread',
+                                color: '#E95420',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
                             },
                             ticks: {
                                 color: '#FFF'
                             },
                             grid: {
-                                color: '#772953'
+                                color: 'rgba(119, 41, 83, 0.3)'
                             }
                         },
                         y: {
                             title: {
                                 display: true,
                                 text: 'Number of Conversations',
-                                color: '#FFF'
+                                color: '#E95420',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
                             },
                             ticks: {
                                 color: '#FFF'
                             },
                             grid: {
-                                color: '#772953'
+                                color: 'rgba(119, 41, 83, 0.3)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#FFF'
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.raw} conversations`;
+                                }
                             }
                         }
                     }
                 }
             });
-        }
-        
-        // Function to create context stats chart
-        function createContextStatsChart(contextStats) {
-            // Create histogram of messages used ratio
-            const messagesRatio = contextStats.messages_used.map((used, i) => 
-                used / contextStats.messages_total[i]
-            );
-            
-            const ctx = document.getElementById('context-stats-chart');
-            if (ctx) {
-                new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: ['0-10%', '10-20%', '20-30%', '30-40%', '40-50%', '50-60%', '60-70%', '70-80%', '80-90%', '90-100%'],
-                        datasets: [{
-                            label: 'Message Usage Ratio Distribution',
-                            data: createHistogram(messagesRatio, 10),
-                            backgroundColor: '#E95420'
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            title: {
-                                display: true,
-                                text: 'Distribution of Message Usage Ratio (Messages Used / Total Messages)',
-                                color: '#FFF'
-                            },
-                            legend: {
-                                labels: {
-                                    color: '#FFF'
-                                }
-                            }
-                        },
-                        scales: {
-                            x: {
-                                ticks: {
-                                    color: '#FFF'
-                                },
-                                grid: {
-                                    color: '#772953'
-                                }
-                            },
-                            y: {
-                                ticks: {
-                                    color: '#FFF'
-                                },
-                                grid: {
-                                    color: '#772953'
-                                }
-                            }
-                        }
-                    }
-                });
-            }
         }
         
         // Function to load and display the prompt file
@@ -1114,101 +1129,6 @@
                 z: z,
                 significant: Math.abs(z) > 1.96 // 95% confidence
             };
-        }
-        
-        // Function to process context statistics
-        function processContextStats(stats) {
-            // Check if context_stats exists in the response
-            if (!stats.context_stats || !stats.context_stats.messages_used || stats.context_stats.messages_used.length === 0) {
-                // No context stats available
-                const contextSummaryTable = document.getElementById('context-summary-stats');
-                if (contextSummaryTable) {
-                    contextSummaryTable.closest('.stats-card').style.display = 'none';
-                }
-                return;
-            }
-            
-            // Calculate min/max values
-            const minMessagesUsed = Math.min(...stats.context_stats.messages_used);
-            const maxMessagesUsed = Math.max(...stats.context_stats.messages_used);
-            const minMessagesTotal = Math.min(...stats.context_stats.messages_total);
-            const maxMessagesTotal = Math.max(...stats.context_stats.messages_total);
-            const minTokensUsed = Math.min(...stats.context_stats.tokens_used);
-            const maxTokensUsed = Math.max(...stats.context_stats.tokens_used);
-            const minMaxTokens = Math.min(...stats.context_stats.max_tokens);
-            const maxMaxTokens = Math.max(...stats.context_stats.max_tokens);
-            
-            // Calculate averages
-            const avgMessagesUsed = stats.context_stats.avg_messages_used;
-            const avgMessagesTotal = stats.context_stats.avg_messages_total;
-            const avgTokensUsed = stats.context_stats.avg_tokens_used;
-            const avgMaxTokens = stats.context_stats.avg_max_tokens;
-            
-            // Calculate usage percentages
-            const avgMsgUsagePct = (avgMessagesUsed / avgMessagesTotal * 100).toFixed(2);
-            const minMsgUsagePct = (minMessagesUsed / minMessagesTotal * 100).toFixed(2);
-            const maxMsgUsagePct = (maxMessagesUsed / maxMessagesTotal * 100).toFixed(2);
-            
-            const avgTokenUsagePct = (avgTokensUsed / avgMaxTokens * 100).toFixed(2);
-            const minTokenUsagePct = (minTokensUsed / minMaxTokens * 100).toFixed(2);
-            const maxTokenUsagePct = (maxTokensUsed / maxMaxTokens * 100).toFixed(2);
-            
-            // Update the context summary table
-            document.getElementById('context-msg-used-avg').textContent = avgMessagesUsed.toFixed(2);
-            document.getElementById('context-msg-avail-avg').textContent = avgMessagesTotal.toFixed(2);
-            document.getElementById('context-msg-usage-pct').textContent = `${avgMsgUsagePct}%`;
-            
-            document.getElementById('context-msg-used-min').textContent = minMessagesUsed;
-            document.getElementById('context-msg-avail-min').textContent = minMessagesTotal;
-            document.getElementById('context-msg-usage-min-pct').textContent = `${minMsgUsagePct}%`;
-            
-            document.getElementById('context-msg-used-max').textContent = maxMessagesUsed;
-            document.getElementById('context-msg-avail-max').textContent = maxMessagesTotal;
-            document.getElementById('context-msg-usage-max-pct').textContent = `${maxMsgUsagePct}%`;
-            
-            document.getElementById('context-token-used-avg').textContent = avgTokensUsed.toFixed(2);
-            document.getElementById('context-token-avail-avg').textContent = avgMaxTokens.toFixed(2);
-            document.getElementById('context-token-usage-pct').textContent = `${avgTokenUsagePct}%`;
-            
-            document.getElementById('context-token-used-min').textContent = minTokensUsed;
-            document.getElementById('context-token-avail-min').textContent = minMaxTokens;
-            document.getElementById('context-token-usage-min-pct').textContent = `${minTokenUsagePct}%`;
-            
-            document.getElementById('context-token-used-max').textContent = maxTokensUsed;
-            document.getElementById('context-token-avail-max').textContent = maxMaxTokens;
-            document.getElementById('context-token-usage-max-pct').textContent = `${maxTokenUsagePct}%`;
-        }
-        
-        // Function to create a histogram from data
-        function createHistogram(data, numBins) {
-            // If numBins is a number, create equal-sized bins
-            if (typeof numBins === 'number') {
-                const min = Math.min(...data);
-                const max = Math.max(...data);
-                const binWidth = (max - min) / numBins;
-                
-                // Create bin edges
-                const bins = Array(numBins).fill().map((_, i) => min + i * binWidth);
-                bins.push(max); // Add the upper edge of the last bin
-                
-                return createHistogram(data, bins);
-            }
-            
-            // If numBins is an array, use it as bin edges
-            const bins = numBins;
-            const counts = Array(bins.length - 1).fill(0);
-            
-            // Count values in each bin
-            for (const value of data) {
-                for (let i = 0; i < bins.length - 1; i++) {
-                    if (value >= bins[i] && (i === bins.length - 2 ? value <= bins[i + 1] : value < bins[i + 1])) {
-                        counts[i]++;
-                        break;
-                    }
-                }
-            }
-            
-            return counts;
         }
         
         // Initialize
