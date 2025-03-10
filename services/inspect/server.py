@@ -13,6 +13,7 @@ import glob
 from urllib.parse import parse_qs
 import numpy as np
 from collections import Counter
+from datasets import load_dataset
 
 # Add parent directory to path to import dataset_processor
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
@@ -581,9 +582,13 @@ class AnnotationHandler(SimpleHTTPRequestHandler):
         
         # Process each conversation
         for conv in conversations:
+            # Check if this is using the new format (synthetic_messages) or old format (synth_messages)
+            orig_messages_field = 'orig_messages'
+            synth_messages_field = 'synthetic_messages' if 'synthetic_messages' in conv else 'synth_messages'
+            
             # Get message counts
-            orig_count = len(conv.get('orig_messages', []))
-            synth_count = len(conv.get('synthetic_messages', []))
+            orig_count = len(conv.get(orig_messages_field, []))
+            synth_count = len(conv.get(synth_messages_field, []))
             
             message_counts['orig_counts'].append(orig_count)
             message_counts['synth_counts'].append(synth_count)
@@ -594,12 +599,12 @@ class AnnotationHandler(SimpleHTTPRequestHandler):
             })
             
             # Get message lengths and word counts
-            for msg in conv.get('orig_messages', []):
+            for msg in conv.get(orig_messages_field, []):
                 text = msg.get('text', '')
                 message_lengths['orig_lengths'].append(len(text))
                 message_lengths['orig_words'].append(len(text.split()))
             
-            for msg in conv.get('synthetic_messages', []):
+            for msg in conv.get(synth_messages_field, []):
                 text = msg.get('text', '')
                 message_lengths['synth_lengths'].append(len(text))
                 message_lengths['synth_words'].append(len(text.split()))
@@ -608,14 +613,14 @@ class AnnotationHandler(SimpleHTTPRequestHandler):
             orig_users = set()
             synth_users = set()
             
-            for msg in conv.get('orig_messages', []):
+            for msg in conv.get(orig_messages_field, []):
                 if 'user' in msg:
                     user_id = msg['user']
                     if isinstance(user_id, (int, float)):
                         user_id = int(float(user_id))
                     orig_users.add(user_id)
             
-            for msg in conv.get('synthetic_messages', []):
+            for msg in conv.get(synth_messages_field, []):
                 if 'user' in msg:
                     user_id = msg['user']
                     if isinstance(user_id, (int, float)):
@@ -725,6 +730,99 @@ class AnnotationHandler(SimpleHTTPRequestHandler):
             'context_stats': context_stats,
             'conversations': conversations  # Include full conversations for additional processing
         }
+
+    def process_huggingface_dataset(self, dataset_name, dataset_id):
+        """Process a HuggingFace dataset for inspection."""
+        try:
+            # Load the dataset
+            dataset = load_dataset(dataset_name)
+            
+            # Convert to pandas DataFrame for easier processing
+            df = dataset['train'].to_pandas()
+            
+            # Check if this is the new format dataset
+            is_new_format = all(col in df.columns for col in [
+                'orig_messages', 'synthetic_messages', 'context_msg_used', 
+                'context_msg_available', 'context_tokens_used', 'context_tokens_available'
+            ])
+            
+            # Create output directory
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            output_dir = f"datasets/{timestamp}"
+            os.makedirs(output_dir, exist_ok=True)
+            
+            # Process the dataset based on its format
+            if is_new_format:
+                # New format - direct mapping
+                conversations = []
+                
+                for _, row in df.iterrows():
+                    # Convert row to dict for easier access
+                    row_dict = row.to_dict()
+                    
+                    # Create conversation entry
+                    conv = {
+                        'conversation_id': str(row_dict['conversation_id']),
+                        'orig_messages': row_dict['orig_messages'],
+                        'synthetic_messages': row_dict['synthetic_messages'],
+                        # Add context statistics as top-level fields
+                        'context_msg_used': row_dict['context_msg_used'],
+                        'context_msg_available': row_dict['context_msg_available'],
+                        'context_tokens_used': row_dict['context_tokens_used'],
+                        'context_tokens_available': row_dict['context_tokens_available']
+                    }
+                    
+                    # Add metadata if available
+                    if 'metadata' in row_dict and row_dict['metadata'] is not None:
+                        # If metadata is a string, try to parse it as JSON
+                        if isinstance(row_dict['metadata'], str):
+                            try:
+                                conv['metadata'] = json.loads(row_dict['metadata'])
+                            except json.JSONDecodeError:
+                                conv['metadata'] = {'model': row_dict.get('model', 'unknown')}
+                        else:
+                            conv['metadata'] = row_dict['metadata']
+                    else:
+                        conv['metadata'] = {'model': row_dict.get('model', 'unknown')}
+                    
+                    conversations.append(conv)
+            else:
+                # Old format - needs conversion
+                # ... (existing code for old format)
+                pass
+            
+            # Save conversations to file
+            conversations_file = os.path.join(output_dir, "conversations.json")
+            with open(conversations_file, 'w', encoding='utf-8') as f:
+                json.dump(conversations, f, ensure_ascii=False, indent=2)
+            
+            # Create empty annotations file
+            annotations_file = os.path.join(output_dir, "annotations.json")
+            with open(annotations_file, 'w', encoding='utf-8') as f:
+                json.dump({}, f)
+            
+            # Create dataset info file
+            dataset_info = {
+                "dataset_id": dataset_id,
+                "source": dataset_name,
+                "timestamp": timestamp,
+                "folder": output_dir,
+                "conversations_file": conversations_file,
+                "annotations_file": annotations_file
+            }
+            
+            info_file = os.path.join(output_dir, "dataset_info.json")
+            with open(info_file, 'w', encoding='utf-8') as f:
+                json.dump(dataset_info, f, indent=2)
+            
+            # Set as current dataset
+            with open("current_dataset.json", 'w', encoding='utf-8') as f:
+                json.dump(dataset_info, f, indent=2)
+            
+            return dataset_info
+        except Exception as e:
+            print(f"Error processing HuggingFace dataset: {e}")
+            raise
 
 def run(port=8000):
     # Create datasets directory if it doesn't exist

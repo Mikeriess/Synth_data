@@ -220,4 +220,51 @@ function loadConversationById(id) {
 }
 
 // Initialize
-loadConversations(); 
+loadConversations();
+
+// Function to load conversation data
+function loadConversation(conversationId) {
+    fetch(`/conversation?id=${conversationId}`)
+        .then(response => response.json())
+        .then(data => {
+            // Clear previous conversation
+            conversationContainer.innerHTML = '';
+            
+            // Store current conversation ID
+            currentConversationId = conversationId;
+            
+            // Display original messages
+            const originalMessages = document.createElement('div');
+            originalMessages.className = 'message-column';
+            originalMessages.innerHTML = `<h2>Original Messages</h2>`;
+            
+            data.orig_messages.forEach(msg => {
+                const msgElement = createMessageElement(msg, 'original');
+                originalMessages.appendChild(msgElement);
+            });
+            
+            // Display synthetic messages
+            const syntheticMessages = document.createElement('div');
+            syntheticMessages.className = 'message-column';
+            syntheticMessages.innerHTML = `<h2>Synthetic Messages</h2>`;
+            
+            // Check if we have synthetic_messages or synth_messages
+            const synthMsgs = data.synthetic_messages || data.synth_messages || [];
+            
+            synthMsgs.forEach(msg => {
+                const msgElement = createMessageElement(msg, 'synthetic');
+                syntheticMessages.appendChild(msgElement);
+            });
+            
+            // Add both columns to the container
+            conversationContainer.appendChild(originalMessages);
+            conversationContainer.appendChild(syntheticMessages);
+            
+            // Update annotation if it exists
+            updateAnnotationDisplay(conversationId);
+        })
+        .catch(error => {
+            console.error('Error loading conversation:', error);
+            conversationContainer.innerHTML = `<p class="error">Error loading conversation: ${error.message}</p>`;
+        });
+} 
