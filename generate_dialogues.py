@@ -326,6 +326,76 @@ def build_context_with_token_limit(messages: List[Dict], prompt_template: str, m
     print(f"Using {len(context_parts)}/{len(messages)} messages ({total_context_tokens} tokens) for context")
     return context, context_stats
 
+def create_analysis_dataset(generated_dataset: dict, model_name: str) -> List[Dict]:
+    """
+    Create a dataset for analysis from the generated dialogues.
+    
+    Args:
+        generated_dataset: Dictionary of generated dialogues
+        model_name: Name of the model used for generation
+        
+    Returns:
+        List of dictionaries with analysis data
+    """
+    analysis_data = []
+    
+    for conv_id, data in generated_dataset.items():
+        # Extract original and synthetic messages
+        orig_messages = data['original_messages']
+        synthetic_messages = data['parsed_messages']
+        
+        # Calculate message counts
+        orig_message_count = len(orig_messages)
+        synthetic_message_count = len(synthetic_messages)
+        
+        # Calculate total text length
+        orig_total_length = sum(len(msg.get('text', '')) for msg in orig_messages)
+        synthetic_total_length = sum(len(msg.get('text', '')) for msg in synthetic_messages)
+        
+        # Calculate total tokens (approximate)
+        orig_total_tokens = sum(len(msg.get('text', '').split()) for msg in orig_messages)
+        synthetic_total_tokens = sum(len(msg.get('text', '').split()) for msg in synthetic_messages)
+        
+        # Extract context statistics if available
+        context_msg_used = 0
+        context_msg_available = 0
+        context_tokens_used = 0
+        context_tokens_available = 0
+        
+        if 'metadata' in data and 'context_stats' in data['metadata']:
+            context_stats = data['metadata']['context_stats']
+            context_msg_used = context_stats.get('messages_used', 0)
+            context_msg_available = context_stats.get('total_messages', 0)
+            context_tokens_used = context_stats.get('tokens_used', 0)
+            context_tokens_available = context_stats.get('max_tokens', 0)
+        
+        # Create analysis entry
+        analysis_entry = {
+            'model': model_name,
+            'conversation_id': conv_id,
+            'orig_messages': orig_messages,
+            'synthetic_messages': synthetic_messages,
+            'orig_message_count': orig_message_count,
+            'synthetic_message_count': synthetic_message_count,
+            'message_count_diff': synthetic_message_count - orig_message_count,
+            'orig_total_length': orig_total_length,
+            'synthetic_total_length': synthetic_total_length,
+            'orig_total_tokens': orig_total_tokens,
+            'synthetic_total_tokens': synthetic_total_tokens,
+            'context_msg_used': context_msg_used,
+            'context_msg_available': context_msg_available,
+            'context_tokens_used': context_tokens_used,
+            'context_tokens_available': context_tokens_available
+        }
+        
+        # Add metadata if available
+        if 'metadata' in data:
+            analysis_entry['metadata'] = data['metadata']
+        
+        analysis_data.append(analysis_entry)
+    
+    return analysis_data
+
 def main(config_path: str):
     # Load configuration
     config = load_config(config_path)

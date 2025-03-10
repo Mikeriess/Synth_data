@@ -694,9 +694,16 @@ class AnnotationHandler(SimpleHTTPRequestHandler):
             'max_tokens': []
         }
         
-        # Extract context statistics from metadata
+        # Extract context statistics from dataset fields or metadata
         for conv in conversations:
-            if 'metadata' in conv and 'context_stats' in conv['metadata']:
+            # First try to get from the direct fields (new format)
+            if 'context_msg_used' in conv and 'context_msg_available' in conv:
+                context_stats['messages_used'].append(conv.get('context_msg_used', 0))
+                context_stats['messages_total'].append(conv.get('context_msg_available', 0))
+                context_stats['tokens_used'].append(conv.get('context_tokens_used', 0))
+                context_stats['max_tokens'].append(conv.get('context_tokens_available', 0))
+            # Fall back to metadata (old format)
+            elif 'metadata' in conv and 'context_stats' in conv['metadata']:
                 stats = conv['metadata']['context_stats']
                 context_stats['messages_used'].append(stats.get('messages_used', 0))
                 context_stats['messages_total'].append(stats.get('total_messages', 0))

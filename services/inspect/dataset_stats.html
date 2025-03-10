@@ -166,6 +166,37 @@
         <div class="chart-container">
             <canvas id="context-stats-chart"></canvas>
         </div>
+
+        <div class="stats-card">
+            <h3>Context Statistics Table</h3>
+            <table id="context-stats-table">
+                <tr>
+                    <th>Metric</th>
+                    <th>Value</th>
+                    <th>Percentage</th>
+                </tr>
+                <tr>
+                    <td>Messages Used</td>
+                    <td id="context-msg-used">-</td>
+                    <td id="context-msg-used-pct">-</td>
+                </tr>
+                <tr>
+                    <td>Messages Available</td>
+                    <td id="context-msg-available">-</td>
+                    <td>100%</td>
+                </tr>
+                <tr>
+                    <td>Tokens Used</td>
+                    <td id="context-tokens-used">-</td>
+                    <td id="context-tokens-used-pct">-</td>
+                </tr>
+                <tr>
+                    <td>Tokens Available</td>
+                    <td id="context-tokens-available">-</td>
+                    <td>100%</td>
+                </tr>
+            </table>
+        </div>
     </div>
 
     <div class="stats-container">
@@ -1079,6 +1110,17 @@
                 <p>Average tokens used: <strong>${avgTokensUsed.toFixed(2)}</strong> out of <strong>${avgMaxTokens.toFixed(2)}</strong></p>
                 <p>Average token usage: <strong>${(stats.context_stats.token_usage * 100).toFixed(2)}%</strong></p>
             `;
+            
+            // Update the table
+            document.getElementById('context-msg-used').textContent = avgMessagesUsed.toFixed(2);
+            document.getElementById('context-msg-available').textContent = avgMessagesTotal.toFixed(2);
+            document.getElementById('context-tokens-used').textContent = avgTokensUsed.toFixed(2);
+            document.getElementById('context-tokens-available').textContent = avgMaxTokens.toFixed(2);
+            
+            document.getElementById('context-msg-used-pct').textContent = 
+                `${(stats.context_stats.usage_ratio * 100).toFixed(2)}%`;
+            document.getElementById('context-tokens-used-pct').textContent = 
+                `${(stats.context_stats.token_usage * 100).toFixed(2)}%`;
             
             // Create histogram of messages used ratio
             const messagesRatio = stats.context_stats.messages_used.map((used, i) => 
