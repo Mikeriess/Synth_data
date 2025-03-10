@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+  inspector:
+    build:
+      context: ../../  # Root of the project
+      dockerfile: services/inspect/Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mount datasets directory to persist data between container restarts
+      - ./datasets:/app/datasets
+      # Mount annotations to persist them
+      - ./annotations.json:/app/annotations.json
+    environment:
+      - HOST=0.0.0.0
+    restart: unless-stopped 
