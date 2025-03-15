@@ -86,6 +86,11 @@ Yingzhou Lu, Minjie Shen, Huazheng Wang, Xiao Wang, Capucine van Rechem, Tianfan
 Tom~B. Brown, Benjamin Mann, Nick Ryder, Melanie Subbiah, Jared Kaplan, Prafulla Dhariwal, Arvind Neelakantan, Pranav Shyam, Girish Sastry, Amanda Askell, Sandhini Agarwal, Ariel Herbert-Voss, Gretchen Krueger, Tom Henighan, Rewon Child, Aditya Ramesh, Daniel~M. Ziegler, Jeffrey Wu, Clemens Winter, Christopher Hesse, Mark Chen, Eric Sigler, Mateusz Litwin, Scott Gray, Benjamin Chess, Jack Clark, Christopher Berner, Sam McCandlish, Alec Radford, Ilya Sutskever, and Dario Amodei.
 \newblock Language models are few-shot learners, 2020.
 
+\bibitem{cc_by_nc_sa_40}
+{Creative Commons}.
+\newblock Attribution-{NonCommercial}-{ShareAlike} 4.0 {International} ({CC} {BY}-{NC}-{SA} 4.0), 2013.
+\newblock Accessed: 01/08/2024.
+
 \bibitem{dacy}
 Kenneth Enevoldsen, Lasse Hansen, and Kristoffer~L. Nielbo.
 \newblock {{DaCy}}: {{A}} unified framework for danish {{NLP}}.

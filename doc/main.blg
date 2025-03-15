@@ -7,45 +7,45 @@ Warning--entry type for "GDPR2016a" isn't style-file defined
 --line 61 of file references.bib
 Warning--empty booktitle in Francopoulo2020AnonymizationFT
 Warning--empty year in dacy
-You've used 19 entries,
+You've used 20 entries,
             1791 wiz_defined-function locations,
-            558 strings with 8315 characters,
-and the built_in function-call counts, 4839 in all, are:
-= -- 362
-> -- 345
+            563 strings with 8457 characters,
+and the built_in function-call counts, 4966 in all, are:
+= -- 372
+> -- 349
 < -- 7
-+ -- 121
-- -- 102
-* -- 320
-:= -- 781
-add.period$ -- 57
-call.type$ -- 19
-change.case$ -- 21
++ -- 123
+- -- 103
+* -- 321
+:= -- 800
+add.period$ -- 60
+call.type$ -- 20
+change.case$ -- 22
 chr.to.int$ -- 0
-cite$ -- 21
-duplicate$ -- 191
-empty$ -- 431
-format.name$ -- 102
-if$ -- 1079
+cite$ -- 22
+duplicate$ -- 196
+empty$ -- 449
+format.name$ -- 103
+if$ -- 1109
 int.to.chr$ -- 0
-int.to.str$ -- 19
+int.to.str$ -- 20
 missing$ -- 8
-newline$ -- 94
-num.names$ -- 25
-pop$ -- 95
+newline$ -- 99
+num.names$ -- 26
+pop$ -- 102
 preamble$ -- 1
 purify$ -- 0
 quote$ -- 0
-skip$ -- 124
+skip$ -- 127
 stack$ -- 0
 substring$ -- 179
-swap$ -- 70
+swap$ -- 71
 text.length$ -- 7
 text.prefix$ -- 0
 top$ -- 0
 type$ -- 0
 warning$ -- 2
-while$ -- 37
-width$ -- 21
-write$ -- 198
+while$ -- 38
+width$ -- 22
+write$ -- 208
 (There were 3 warnings)

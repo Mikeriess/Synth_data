@@ -1,15 +1,15 @@
 # Fdb version 4
-["bibtex main"] 1742076952.02974 "main.aux" "main.bbl" "main" 1742076952.47102 0
+["bibtex main"] 1742079500.41952 "main.aux" "main.bbl" "main" 1742079743.71792 0
   "./references.bib" 1742075780.83362 26328 ea013c1ced10ab67c321e2c9d1603c80 ""
   "/usr/share/texlive/texmf-dist/bibtex/bst/base/unsrt.bst" 1292289607 18030 1376b4b231b50c66211e47e42eda2875 ""
-  "main.aux" 1742076952.38091 5864 0092fddd2fd1510ea16fac282fe096e0 "pdflatex"
+  "main.aux" 1742079743.62979 5952 6c8891401c10834d6c14a90e0d8e88a6 "pdflatex"
   (generated)
   "main.bbl"
   "main.blg"
   (rewritten before read)
-["pdflatex"] 1742076952.06195 "/home/mike/Desktop/Synth_data/doc/main.tex" "main.pdf" "main" 1742076952.47112 0
+["pdflatex"] 1742079743.31372 "/home/mike/Desktop/Synth_data/doc/main.tex" "main.pdf" "main" 1742079743.71801 0
   "/etc/texmf/web2c/texmf.cnf" 1739998086.27604 475 c0e671620eb5563b2130f56340a5fde8 ""
-  "/home/mike/Desktop/Synth_data/doc/main.tex" 1742076951.0059 23371 8f793498b1d037a729552225dd68c6f0 ""
+  "/home/mike/Desktop/Synth_data/doc/main.tex" 1742079743.23079 24544 55205acaf9c768ad1cbbd4697ac616de ""
   "/usr/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc" 1165713224 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
   "/usr/share/texlive/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/adobe/times/ptmb8r.tfm" 1136768653 4524 6bce29db5bc272ba5f332261583fee9c ""
@@ -138,10 +138,10 @@
   "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1742056536.2364 5312232 f3296911be9cc021788f3f879cf0a47d ""
   "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1742072258 6800797 7d2c317764cef941e8580e06b55e7d21 ""
   "arxiv.sty" 1742048699.05693 7490 a96b0cef0e35ec8e90b092792e37a0b7 ""
-  "main.aux" 1742076952.38091 5864 0092fddd2fd1510ea16fac282fe096e0 "pdflatex"
-  "main.bbl" 1742076952.05891 5431 9fc19060aa751aa3cf2a71c4edc782f4 "bibtex main"
-  "main.out" 1742076952.38091 2247 19908c7259039f53fcb714582269a9b9 "pdflatex"
-  "main.tex" 1742076951.0059 23371 8f793498b1d037a729552225dd68c6f0 ""
+  "main.aux" 1742079743.62979 5952 6c8891401c10834d6c14a90e0d8e88a6 "pdflatex"
+  "main.bbl" 1742079500.44743 5613 73a8f94a649d8aed44c50a14130d6f95 "bibtex main"
+  "main.out" 1742079743.62979 2247 19908c7259039f53fcb714582269a9b9 "pdflatex"
+  "main.tex" 1742079743.23079 24544 55205acaf9c768ad1cbbd4697ac616de ""
   (generated)
   "main.aux"
   "main.log"
