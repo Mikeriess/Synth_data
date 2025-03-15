@@ -1,0 +1,318 @@
+@inproceedings{dacy,
+    title = {{{DaCy}}: {{A}} Unified Framework for Danish {{NLP}}},
+    booktitle = {Ceur Workshop Proceedings},
+    author = {Enevoldsen, Kenneth and Hansen, Lasse and Nielbo, Kristoffer L.},
+    date = {2021},
+    series = {{{CEUR Workshop Proceedings}}},
+    volume = {2989},
+    pages = {206--216},
+    publisher = {{ceur workshop proceedings}},
+    issn = {1613-0073},
+    keywords = {Danish NLP,Data Augmentation,Low-resource NLP,Natural Language Processing},
+}
+
+@article{Lukas2023AnalyzingLO,
+  title={Analyzing Leakage of Personally Identifiable Information in Language Models},
+  author={Nils Lukas and A. Salem and Robert Sim and Shruti Tople and Lukas Wutschitz and Santiago Zanella-B'eguelin},
+  journal={2023 IEEE Symposium on Security and Privacy (SP)},
+  year={2023},
+  pages={346-363},
+  url={https://api.semanticscholar.org/CorpusID:256459554},
+  annote={Language Models (LMs) have been shown to leak information about training data through sentence-level membership inference and reconstruction attacks. Understanding the risk of LMs leaking Personally Identifiable Information (PII) has received less attention, which can be attributed to the false assumption that dataset curation techniques such as scrubbing are sufficient to prevent PII leakage. Scrubbing techniques reduce but do not prevent the risk of PII leakage: in practice scrubbing is imperfect and must balance the trade-off between minimizing disclosure and preserving the utility of the dataset. On the other hand, it is unclear to which extent algorithmic defenses such as differential privacy, designed to guarantee sentence-or user-level privacy, prevent PII disclosure. In this work, we introduce rigorous game-based definitions for three types of PII leakage via black-box extraction, inference, and reconstruction attacks with only API access to an LM. We empirically evaluate the attacks against GPT-2 models fine-tuned with and without defenses in three domains: case law, health care, and e-mails. Our main contributions are (i) novel attacks that can extract up to 10× more PII sequences than existing attacks, (ii) showing that sentence-level differential privacy reduces the risk of PII disclosure but still leaks about 3% of PII sequences, and (iii) a subtle connection between record-level membership inference and PII reconstruction. Code to reproduce all experiments in the paper is available at https://github.com/microsoft/analysing_pii_leakage.}
+}
+
+@misc{staab2024memorizationviolatingprivacyinference,
+      title={Beyond Memorization: Violating Privacy Via Inference with Large Language Models}, 
+      author={Robin Staab and Mark Vero and Mislav Balunović and Martin Vechev},
+      year={2024},
+      eprint={2310.07298},
+      archivePrefix={arXiv},
+      primaryClass={cs.AI},
+      url={https://arxiv.org/abs/2310.07298}, 
+      annote={We construct a dataset consisting of real Reddit profiles, and show that current LLMs can infer a wide range of personal attributes (e.g., location, income, sex), achieving up to 85% top-1 and 95% top-3 accuracy at a fraction of the cost (100x) and time (240x) required by humans. As people increasingly interact with LLM-powered chatbots across all aspects of life, we also explore the emerging threat of privacy-invasive chatbots trying to extract personal information through seemingly benign questions. Finally, we show that common mitigations, i.e., text anonymization and model alignment, are currently ineffective at protecting user privacy against LLM inference. Our findings highlight that current LLMs can infer personal data at a previously unattainable scale. In the absence of working defenses, we advocate for a broader discussion around LLM privacy implications beyond memorization, striving for a wider privacy protection.}
+}
+@misc{hartmann2023sokmemorizationgeneralpurposelarge,
+      title={SoK: Memorization in General-Purpose Large Language Models}, 
+      author={Valentin Hartmann and Anshuman Suri and Vincent Bindschaedler and David Evans and Shruti Tople and Robert West},
+      year={2023},
+      eprint={2310.18362},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL},
+      url={https://arxiv.org/abs/2310.18362}, 
+      annote={Large Language Models (LLMs) are advancing at a remarkable pace, with myriad applications under development. Unlike most earlier machine learning models, they are no longer built for one specific application but are designed to excel in a wide range of tasks. A major part of this success is due to their huge training datasets and the unprecedented number of model parameters, which allow them to memorize large amounts of information contained in the training data. This memorization goes beyond mere language, and encompasses information only present in a few documents. This is often desirable since it is necessary for performing tasks such as question answering, and therefore an important part of learning, but also brings a whole array of issues, from privacy and security to copyright and beyond. LLMs can memorize short secrets in the training data, but can also memorize concepts like facts or writing styles that can be expressed in text in many different ways. We propose a taxonomy for memorization in LLMs that covers verbatim text, facts, ideas and algorithms, writing styles, distributional properties, and alignment goals. We describe the implications of each type of memorization - both positive and negative - for model performance, privacy, security and confidentiality, copyright, and auditing, and ways to detect and prevent memorization. We further highlight the challenges that arise from the predominant way of defining memorization with respect to model behavior instead of model weights, due to LLM-specific phenomena such as reasoning capabilities or differences between decoding algorithms. Throughout the paper, we describe potential risks and opportunities arising from memorization in LLMs that we hope will motivate new research directions.}
+}
+
+@inproceedings{Francopoulo2020AnonymizationFT,
+  title={Anonymization for the GDPR in the Context of Citizen and Customer Relationship Management and NLP},
+  author={Gil Francopoulo and L{\'e}on-Paul Schaub},
+  year={2020},
+  url={https://api.semanticscholar.org/CorpusID:236942191},
+  annotate={The General Data Protection Regulation (GDPR) is the regulation in the European Economic Area (EEA) law on data protection and privacy for all citizens. There is a dilemma between sharing data and their subjects’ conﬁdentiality to respect GDPR in the commercial, legal and administrative sectors of activity. Moreover, the case of text data poses an additional difﬁculty: suppressing the personal information without deteriorating the semantic argumentation expressed in the text in order to apply a subsequent process like a thematic detection, an opinion mining or a chatbot. We listed ﬁve functional requirements for an anonymization process but we faced some difﬁculties to implement a solution that fully meets these requirements. Finally, and following an engineering approach, we propose a practical compromise which currently satisﬁes our users and could also be applied to other sectors like the medical or ﬁnancial ones.}
+}
+
+@inproceedings{Weigl2023MediatingTT,
+  title={Mediating the tension between Data Sharing and Privacy: the Case of DMA and GDPR},
+  author={Linda Weigl and Tom Josua Barbereau and Johannes Sedlmeir and Liudmila Zavolokina},
+  booktitle={European Conference on Information Systems},
+  year={2023},
+  url={https://api.semanticscholar.org/CorpusID:259977224},
+  annote={The Digital Markets Act (DMA) constitutes a crucial part of the European legislative framework addressing the dominance of ‘Big Tech’. It intends to foster fairness and competition in Europe’s digital platform economy by imposing obligations on ‘gatekeepers’ to share end-user-related information with business users. Yet, this may involve the processing of personal data subject to the General Data Protection Regulation (GDPR). The obligation to provide access to personal data in a GDPR-compliant manner poses a regulatory and technical challenge and can serve as a justification for gatekeepers to refrain from data sharing. In this research-in-progress paper, we analyze key tensions between the DMA and the GDPR through the paradox perspective. We argue through a task-technology fit approach how privacy-enhancing technologies – particularly anonymization techniques – and portability could help mediate tensions between data sharing and privacy. Our contribution provides theoretical and practical insights to facilitate legal compliance.}
+}
+@online{GDPR2016a,
+  date       = {2016-05-04},
+  location   = {OJ L 119, 4.5.2016, p. 1--88},
+  title      = {Regulation ({EU}) 2016/679 of the {European} {Parliament} and of the {Council}},
+  url        = {https://data.europa.eu/eli/reg/2016/679/oj},
+  titleaddon = {of 27 {April} 2016 on the protection of natural persons with regard to the processing of personal data and on the free movement of such data, and repealing {Directive} 95/46/{EC} ({General} {Data} {Protection} {Regulation})},
+  abstract   = {The General Data Protection Regulation (2016/679, "GDPR") is a Regulation in European Union (EU) law on data protection and privacy in the EU and the European Economic Area (EEA).},
+  author     = {{European Parliament} and {Council of the European Union}},
+  keywords   = {access consumer data data-processing freedom gdpr information justice law personal privacy protection security verification},
+  urldate    = {2023-04-13},
+}
+
+@article{enevoldsen2021dacy,
+  title={DaCy: A unified framework for Danish NLP},
+  author={Enevoldsen, Kenneth and Hansen, Lasse and Nielbo, Kristoffer},
+  journal={arXiv preprint arXiv:2107.05295},
+  year={2021}
+}
+@misc{saattrupdan2024scandiNER,
+  author       = {Dan Saattrup Nielsen},
+  title        = {{ScandiNER: Named Entity Recognition model for Scandinavian Languages}},
+  year         = {2024},
+  publisher    = {Hugging Face},
+  howpublished = {\url{https://huggingface.co/saattrupdan/nbailab-base-ner-scandi}},
+  note         = {Accessed: July 29, 2024}
+}
+
+@misc{yermilov2023privacy,
+      title={Privacy- and Utility-Preserving NLP with Anonymized Data: A case study of Pseudonymization}, 
+      author={Oleksandr Yermilov and Vipul Raheja and Artem Chernodub},
+      year={2023},
+      eprint={2306.05561},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL},
+      url={https://arxiv.org/abs/2306.05561}, 
+      annote={This work investigates the effectiveness of different pseudonymization techniques, ranging from rule-based substitutions to using pre-trained Large Language Models (LLMs), on a variety of datasets and models used for two widely used NLP tasks: text classification and summarization. Our work provides crucial insights into the gaps between original and anonymized data (focusing on the pseudonymization technique) and model quality and fosters future research into higher-quality anonymization techniques to better balance the trade-offs between data protection and utility preservation. We make our code, pseudonymized datasets, and downstream models publicly available}
+}
+
+@article{Enevoldsen2024, 
+      doi = {10.21105/joss.06370}, 
+      url = {https://doi.org/10.21105/joss.06370}, 
+      year = {2024}, 
+      publisher = {The Open Journal}, 
+      volume = {9}, 
+      number = {96}, 
+      pages = {6370}, 
+      author = {Kenneth Enevoldsen}, 
+      title = {Augmenty: A Python Library for Structured Text Augmentation}, journal = {Journal of Open Source Software}, annote={Text augmentation - the process of generating new text samples by applying transformations to existing samples - is a useful tool for training (Wei & Zou, 2019) and evaluating (Ribeiro etal., 2020) natural language processing (NLP) models and systems. Despite its utility, existing libraries are often limited in terms of functionality and flexibility. They are confined to basic tasks such as text classification or catering to specific downstream use cases such as estimating robustness (Goel et al., 2021). Recognizing these constraints, Augmenty is a tool for structured augmentation of text along with its annotations. Augmenty integrates seamlessly with the popular NLP library spaCy (Honnibal et al., 2020) and seeks to be compatible with all models and tasks supported by spaCy. Augmenty provides a wide range of augmenters that can be combined flexibly to create complex augmentation pipelines. It also includes a set of primitives that can be used to create custom augmenters such as word replacement augmenters. This functionality allows for augmentations within a range of applications such as named entity recognition (NER), part-of-speech tagging, and dependency parsing.
+}}
+
+@misc{mozes2021anonymizationsurvey,
+      title={No Intruder, no Validity: Evaluation Criteria for Privacy-Preserving Text Anonymization}, 
+      author={Maximilian Mozes and Bennett Kleinberg},
+      year={2021},
+      eprint={2103.09263},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL},
+      url={https://arxiv.org/abs/2103.09263}, 
+      annote={For sensitive text data to be shared among NLP researchers and practitioners, shared documents need to comply with data protection and privacy laws. There is hence a growing interest in automated approaches for text anonymization. However, measuring such methods' performance is challenging: missing a single identifying attribute can reveal an individual's identity. In this paper, we draw attention to this problem and argue that researchers and practitioners developing automated text anonymization systems should carefully assess whether their evaluation methods truly reflect the system's ability to protect individuals from being re-identified. We then propose TILD, a set of evaluation criteria that comprises an anonymization method's technical performance, the information loss resulting from its anonymization, and the human ability to de-anonymize redacted documents. These criteria may facilitate progress towards a standardized way for measuring anonymization performance.}
+}
+
+@misc{lu2024machinelearningsyntheticdata,
+      title={Machine Learning for Synthetic Data Generation: A Review}, 
+      author={Yingzhou Lu and Minjie Shen and Huazheng Wang and Xiao Wang and Capucine van Rechem and Tianfan Fu and Wenqi Wei},
+      year={2024},
+      eprint={2302.04062},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/2302.04062},
+      annote={Machine learning heavily relies on data, but real-world applications often encounter various data-related issues. These include data of poor quality, insufficient data points leading to under-fitting of machine learning models, and difficulties in data access due to concerns surrounding privacy, safety, and regulations. In light of these challenges, the concept of synthetic data generation emerges as a promising alternative that allows for data sharing and utilization in ways that real-world data cannot facilitate. This paper presents a comprehensive systematic review of existing studies that employ machine learning models for the purpose of generating synthetic data. The review encompasses various perspectives, starting with the applications of synthetic data generation, spanning computer vision, speech, natural language processing, healthcare, and business domains. Additionally, it explores different machine learning methods, with particular emphasis on neural network architectures and deep generative models. The paper also addresses the crucial aspects of privacy and fairness concerns related to synthetic data generation. Furthermore, this study identifies the challenges and opportunities prevalent in this emerging field, shedding light on the potential avenues for future research. By delving into the intricacies of synthetic data generation, this paper aims to contribute to the advancement of knowledge and inspire further exploration in synthetic data generation.} 
+}
+
+@InProceedings{pmlr-v162-kandpal22a,
+  title = 	 {Deduplicating Training Data Mitigates Privacy Risks in Language Models},
+  author =       {Kandpal, Nikhil and Wallace, Eric and Raffel, Colin},
+  booktitle = 	 {Proceedings of the 39th International Conference on Machine Learning},
+  pages = 	 {10697--10707},
+  year = 	 {2022},
+  editor = 	 {Chaudhuri, Kamalika and Jegelka, Stefanie and Song, Le and Szepesvari, Csaba and Niu, Gang and Sabato, Sivan},
+  volume = 	 {162},
+  series = 	 {Proceedings of Machine Learning Research},
+  month = 	 {17--23 Jul},
+  publisher =    {PMLR},
+  pdf = 	 {https://proceedings.mlr.press/v162/kandpal22a/kandpal22a.pdf},
+  url = 	 {https://proceedings.mlr.press/v162/kandpal22a.html},
+  abstract = 	 {Past work has shown that large language models are susceptible to privacy attacks, where adversaries generate sequences from a trained model and detect which sequences are memorized from the training set. In this work, we show that the success of these attacks is largely due to duplication in commonly used web-scraped training sets. We first show that the rate at which language models regenerate training sequences is superlinearly related to a sequence’s count in the training set. For instance, a sequence that is present 10 times in the training data is on average generated 1000x more often than a sequence that is present only once. We next show that existing methods for detecting memorized sequences have near-chance accuracy on non-duplicated training sequences. Finally, we find that after applying methods to deduplicate training data, language models are considerably more secure against these types of privacy attacks. Taken together, our results motivate an increased focus on deduplication in privacy-sensitive applications and a reevaluation of the practicality of existing privacy attacks.}
+}
+
+
+@article{nielsen2024encoder,
+  title={Encoder vs Decoder: Comparative Analysis of Encoder and Decoder Language Models on Multilingual NLU Tasks},
+  author={Nielsen, Dan Saattrup and Enevoldsen, Kenneth and Schneider-Kamp, Peter},
+  journal={arXiv preprint arXiv:2406.13469},
+  year={2024}
+}
+@inproceedings{nielsen2023scandeval,
+  author = {Nielsen, Dan Saattrup},
+  booktitle = {Proceedings of the 24th Nordic Conference on Computational Linguistics (NoDaLiDa)},
+  month = may,
+  pages = {185--201},
+  title = {{ScandEval: A Benchmark for Scandinavian Natural Language Processing}},
+  year = {2023}
+}
+
+@InProceedings{Dwork2008,
+author="Dwork, Cynthia",
+editor="Agrawal, Manindra
+and Du, Dingzhu
+and Duan, Zhenhua
+and Li, Angsheng",
+title="Differential Privacy: A Survey of Results",
+booktitle="Theory and Applications of Models of Computation",
+year="2008",
+publisher="Springer Berlin Heidelberg",
+address="Berlin, Heidelberg",
+pages="1--19",
+abstract="Over the past five years a new approach to privacy-preserving data analysis has born fruit [13, 18, 7, 19, 5, 37, 35, 8, 32]. This approach differs from much (but not all!) of the related literature in the statistics, databases, theory, and cryptography communities, in that a formal and ad omnia privacy guarantee is defined, and the data analysis techniques presented are rigorously proved to satisfy the guarantee. The key privacy guarantee that has emerged is differential privacy. Roughly speaking, this ensures that (almost, and quantifiably) no risk is incurred by joining a statistical database.",
+isbn="978-3-540-79228-4"
+}
+
+@techreport{NESH2019,
+  title = {A Guide to Internet Research Ethics},
+  author = {{National Committee for Research Ethics in the Social Sciences and the Humanities}},
+  year = {2019},
+  institution = {The National Committee for Research Ethics in the Social Sciences and the Humanities (NESH)},
+  type = {Guidelines},
+  address = {Oslo, Norway},
+  url = {https://www.forskningsetikk.no/en/guidelines/social-sciences-and-humanities/a-guide-to-internet-research-ethics/},
+  note = {Second edition published in Norwegian in 2018 and in English May 2019}
+}
+@techreport{franzke2020internet,
+  title = {Internet Research: Ethical Guidelines 3.0},
+  author = {franzke, aline shakti and Bechmann, Anja and Zimmer, Michael and Ess, Charles and {Association of Internet Researchers}},
+  year = {2020},
+  institution = {Association of Internet Researchers},
+  type = {Guidelines},
+  url = {https://aoir.org/reports/ethics3.pdf},
+  note = {Published under Creative Commons license}
+}
+
+@misc{brown2020languagemodelsfewshotlearners,
+      title={Language Models are Few-Shot Learners}, 
+      author={Tom B. Brown and Benjamin Mann and Nick Ryder and Melanie Subbiah and Jared Kaplan and Prafulla Dhariwal and Arvind Neelakantan and Pranav Shyam and Girish Sastry and Amanda Askell and Sandhini Agarwal and Ariel Herbert-Voss and Gretchen Krueger and Tom Henighan and Rewon Child and Aditya Ramesh and Daniel M. Ziegler and Jeffrey Wu and Clemens Winter and Christopher Hesse and Mark Chen and Eric Sigler and Mateusz Litwin and Scott Gray and Benjamin Chess and Jack Clark and Christopher Berner and Sam McCandlish and Alec Radford and Ilya Sutskever and Dario Amodei},
+      year={2020},
+      eprint={2005.14165},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL},
+      url={https://arxiv.org/abs/2005.14165}, 
+}
+
+@inproceedings{lison-etal-2021-anonymisation,
+    title = "Anonymisation Models for Text Data: State of the art, Challenges and Future Directions",
+    author = "Lison, Pierre  and
+      Pil{\'a}n, Ildik{\'o}  and
+      Sanchez, David  and
+      Batet, Montserrat  and
+      {\O}vrelid, Lilja",
+    editor = "Zong, Chengqing  and
+      Xia, Fei  and
+      Li, Wenjie  and
+      Navigli, Roberto",
+    booktitle = "Proceedings of the 59th Annual Meeting of the Association for Computational Linguistics and the 11th International Joint Conference on Natural Language Processing (Volume 1: Long Papers)",
+    month = aug,
+    year = "2021",
+    address = "Online",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2021.acl-long.323",
+    doi = "10.18653/v1/2021.acl-long.323",
+    pages = "4188--4203",
+    abstract = "This position paper investigates the problem of automated text anonymisation, which is a prerequisite for secure sharing of documents containing sensitive information about individuals. We summarise the key concepts behind text anonymisation and provide a review of current approaches. Anonymisation methods have so far been developed in two fields with little mutual interaction, namely natural language processing and privacy-preserving data publishing. Based on a case study, we outline the benefits and limitations of these approaches and discuss a number of open challenges, such as (1) how to account for multiple types of semantic inferences, (2) how to strike a balance between disclosure risk and data utility and (3) how to evaluate the quality of the resulting anonymisation. We lay out a case for moving beyond sequence labelling models and incorporate explicit measures of disclosure risk into the text anonymisation process.",
+}
+
+@misc{microsoft_presidio,
+  author = {{Microsoft}},
+  title = {Presidio},
+  year = {2024},
+  publisher = {GitHub},
+  journal = {GitHub repository},
+  url = {https://github.com/microsoft/presidio},
+  note = {Accessed on July 30, 2024}
+}
+
+@online{scandeval_danish,
+  author = {{ScandEval}},
+  title = {Danish NLU},
+  year = {2024},
+  url = {https://scandeval.com/danish-nlu/},
+  urldate = {2024-07-31},
+  organization = {ScandEval},
+  note = {A Natural Language Understanding Benchmark}
+}
+
+@misc{devlin2019bertpretrainingdeepbidirectional,
+      title={BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding}, 
+      author={Jacob Devlin and Ming-Wei Chang and Kenton Lee and Kristina Toutanova},
+      year={2019},
+      eprint={1810.04805},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL},
+      url={https://arxiv.org/abs/1810.04805}, 
+}
+
+@misc{dacy2021,
+      title={DaCy: A Unified Framework for Danish NLP}, 
+      author={Kenneth Enevoldsen and Lasse Hansen and Kristoffer Nielbo},
+      year={2021},
+      eprint={2107.05295},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL},
+      url={https://arxiv.org/abs/2107.05295}, 
+}
+
+@misc{touvron2023llama,
+      title={LLaMA: Open and Efficient Foundation Language Models}, 
+      author={Hugo Touvron and Thibaut Lavril and Gautier Izacard and Xavier Martinet and Marie-Anne Lachaux and Timothée Lacroix and Baptiste Rozière and Naman Goyal and Eric Hambro and Faisal Azhar and Aurelien Rodriguez and Armand Joulin and Edouard Grave and Guillaume Lample},
+      year={2023},
+      eprint={2302.13971},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL},
+      url={https://arxiv.org/abs/2302.13971}, 
+}
+
+@misc{radford2019language,
+  title={Language Models are Unsupervised Multitask Learners},
+  author={Radford, Alec and Wu, Jeffrey and Child, Rewon and Luan, David and Amodei, Dario and Sutskever, Ilya},
+  journal={OpenAI Blog},
+  year={2019},
+  url={https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf}, 
+  publisher={OpenAI}
+}
+
+@article{brown2020language,
+  title={Language Models are Few-Shot Learners},
+  author={Brown, Tom B and Mann, Benjamin and Ryder, Nick and Subbiah, Melanie and Kaplan, Jared and Dhariwal, Prafulla and Neelakantan, Arvind and Shyam, Pranav and Sastry, Girish and Askell, Amanda and others},
+  journal={Advances in Neural Information Processing Systems},
+  volume={33},
+  pages={1877--1901},
+  year={2020},
+  publisher={Curran Associates, Inc.}
+}
+
+@misc{enevoldsen2024danskdacy260domain,
+      title={DANSK and DaCy 2.6.0: Domain Generalization of Danish Named Entity Recognition}, 
+      author={Kenneth Enevoldsen and Emil Trenckner Jessen and Rebekah Baglini},
+      year={2024},
+      eprint={2402.18209},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL},
+      url={https://arxiv.org/abs/2402.18209}, 
+}
+
+@misc{cc_by_nc_sa_40,
+  title = {Attribution-{NonCommercial}-{ShareAlike} 4.0 {International} ({CC} {BY}-{NC}-{SA} 4.0)},
+  author = {{Creative Commons}},
+  year = {2013},
+  url = {https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode},
+  note = {Accessed: 01/08/2024}
+}

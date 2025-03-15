@@ -154,6 +154,30 @@
 
     <div id="dataset-info" class="dataset-info">Loading dataset information...</div>
 
+    <div class="chart-section">
+        <h2 class="chart-title">Dialogue Prompt</h2>
+        <p class="chart-description">This is the prompt used to generate the synthetic conversations in this dataset.</p>
+        <div class="prompt-container">
+            <div id="loading-prompt" class="loading">
+                <div class="spinner"></div>
+                <div>Loading prompt...</div>
+            </div>
+            <pre id="prompt-content" class="prompt-text"></pre>
+        </div>
+    </div>
+
+    <div class="chart-section">
+        <h2 class="chart-title">Generation Config</h2>
+        <p class="chart-description">This is the configuration used for generating the synthetic conversations in this dataset.</p>
+        <div class="prompt-container">
+            <div id="loading-config" class="loading">
+                <div class="spinner"></div>
+                <div>Loading config...</div>
+            </div>
+            <pre id="config-content" class="prompt-text"></pre>
+        </div>
+    </div>
+
     <div class="stats-container">
         <div class="stats-card">
             <h2 class="chart-title">Post Count Statistics</h2>
@@ -229,7 +253,7 @@
         
         <div class="stats-card">
             <h2 class="chart-title">Token Statistics</h2>
-            <p class="stats-description">Token counts in posts. (roughly 1 token ≈ 4 characters or 0.75 words).</p>
+            <p class="stats-description"><strong>ESTIMATED</strong> token counts in posts. Formula: tokens ≈ words × 1.3 (roughly 1 token ≈ 4 characters or 0.75 words). These are approximations, not exact tokenizer counts.</p>
             <table id="token-stats-table">
                 <tr>
                     <th>Metric</th>
@@ -388,26 +412,47 @@
     </div>
 
     <div class="chart-section">
-        <h2 class="chart-title">Generation Config</h2>
-        <p class="chart-description">This is the configuration used for generating the synthetic conversations in this dataset.</p>
-        <div class="prompt-container">
-            <div id="loading-config" class="loading">
+        <h2 class="chart-title">Word Error Rate Distribution</h2>
+        <p class="chart-description">This histogram shows the distribution of Word Error Rate (WER) between original and synthetic conversations. WER is calculated after removing speaker identifiers like "Person 1:".</p>
+        <div class="chart-container">
+            <div id="loading-wer-dist" class="loading">
                 <div class="spinner"></div>
-                <div>Loading config...</div>
+                <div>Loading chart data...</div>
             </div>
-            <pre id="config-content" class="prompt-text"></pre>
+            <canvas id="werDistChart"></canvas>
         </div>
     </div>
 
-    <div class="chart-section">
-        <h2 class="chart-title">Dialogue Prompt</h2>
-        <p class="chart-description">This is the prompt used to generate the synthetic conversations in this dataset.</p>
-        <div class="prompt-container">
-            <div id="loading-prompt" class="loading">
-                <div class="spinner"></div>
-                <div>Loading prompt...</div>
-            </div>
-            <pre id="prompt-content" class="prompt-text"></pre>
+    <div class="stats-container">
+        <div class="stats-card">
+            <h2 class="chart-title">Word Error Rate Statistics</h2>
+            <p class="stats-description">Word Error Rate (WER) between original and synthetic posts, excluding speaker identifiers.</p>
+            <table id="wer-stats-table">
+                <tr>
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+                <tr>
+                    <td>Average WER</td>
+                    <td id="wer-avg">-</td>
+                </tr>
+                <tr>
+                    <td>Median WER</td>
+                    <td id="wer-median">-</td>
+                </tr>
+                <tr>
+                    <td>Min WER</td>
+                    <td id="wer-min">-</td>
+                </tr>
+                <tr>
+                    <td>Max WER</td>
+                    <td id="wer-max">-</td>
+                </tr>
+                <tr>
+                    <td>Standard Deviation</td>
+                    <td id="wer-std">-</td>
+                </tr>
+            </table>
         </div>
     </div>
 
@@ -436,8 +481,8 @@
     </div>
 
     <div class="chart-section">
-        <h2 class="chart-title">Token Distribution</h2>
-        <p class="chart-description">This histogram shows the distribution of token counts for both original and synthetic posts. The x-axis shows token count ranges, and the y-axis shows the frequency (number of posts).</p>
+        <h2 class="chart-title">ESTIMATED Token Distribution</h2>
+        <p class="chart-description">This histogram shows the distribution of estimated token counts for both original and synthetic posts. Tokens are calculated as words × 1.3, not using an actual tokenizer.</p>
         <div class="chart-container">
             <div id="loading-token-dist" class="loading">
                 <div class="spinner"></div>
@@ -493,6 +538,21 @@
                 createTokenDistChart(stats.message_lengths);
                 createUserCountChart(stats.user_counts);
                 createContextUsageChart(stats.context_stats);
+                
+                // Calculate and display WER statistics
+                if (stats.conversations && stats.conversations.length > 0) {
+                    const werStats = calculateWERStats(stats.conversations);
+                    
+                    // Update WER statistics table
+                    document.getElementById('wer-avg').textContent = (werStats.avg * 100).toFixed(2) + '%';
+                    document.getElementById('wer-median').textContent = (werStats.median * 100).toFixed(2) + '%';
+                    document.getElementById('wer-min').textContent = (werStats.min * 100).toFixed(2) + '%';
+                    document.getElementById('wer-max').textContent = (werStats.max * 100).toFixed(2) + '%';
+                    document.getElementById('wer-std').textContent = (werStats.std * 100).toFixed(2) + '%';
+                    
+                    // Create WER distribution chart
+                    createWERDistChart(werStats.values);
+                }
                 
             } catch (error) {
                 console.error('Error fetching dataset statistics:', error);
@@ -1409,6 +1469,177 @@
                     }
                 }
             });
+        }
+        
+        // Function to calculate WER between two strings
+        function calculateWER(original, generated) {
+            // Remove speaker identifiers like "Person 1:" from both strings
+            const cleanOriginal = original.replace(/Person \d+:/g, '').trim();
+            const cleanGenerated = generated.replace(/Person \d+:/g, '').trim();
+            
+            // Split into words
+            const origWords = cleanOriginal.split(/\s+/);
+            const genWords = cleanGenerated.split(/\s+/);
+            
+            // Initialize the distance matrix
+            const dp = Array(origWords.length + 1).fill().map(() => Array(genWords.length + 1).fill(0));
+            
+            // Fill the first row and column
+            for (let i = 0; i <= origWords.length; i++) dp[i][0] = i;
+            for (let j = 0; j <= genWords.length; j++) dp[0][j] = j;
+            
+            // Fill the rest of the matrix
+            for (let i = 1; i <= origWords.length; i++) {
+                for (let j = 1; j <= genWords.length; j++) {
+                    const cost = origWords[i-1] === genWords[j-1] ? 0 : 1;
+                    dp[i][j] = Math.min(
+                        dp[i-1][j] + 1,          // deletion
+                        dp[i][j-1] + 1,          // insertion
+                        dp[i-1][j-1] + cost      // substitution
+                    );
+                }
+            }
+            
+            // Calculate WER
+            const distance = dp[origWords.length][genWords.length];
+            return origWords.length > 0 ? distance / origWords.length : 0;
+        }
+        
+        // Function to create the WER distribution chart
+        function createWERDistChart(werValues) {
+            const ctx = document.getElementById('werDistChart').getContext('2d');
+            
+            // Hide loading indicator
+            document.getElementById('loading-wer-dist').style.display = 'none';
+            
+            // Create histogram bins (0 to 1 in steps of 0.05)
+            const bins = Array.from({length: 21}, (_, i) => i * 0.05);
+            
+            // Count values in each bin
+            const counts = Array(bins.length).fill(0);
+            werValues.forEach(wer => {
+                const binIndex = Math.min(Math.floor(wer / 0.05), bins.length - 1);
+                counts[binIndex]++;
+            });
+            
+            // Create labels for the chart
+            const labels = bins.map((bin, i) => {
+                if (i === bins.length - 1) return `${bin.toFixed(2)}+`;
+                return `${bin.toFixed(2)}-${(bin + 0.05).toFixed(2)}`;
+            });
+            
+            // Create bar chart
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Word Error Rate',
+                        data: counts,
+                        backgroundColor: 'rgba(233, 84, 32, 0.5)',
+                        borderColor: 'rgba(233, 84, 32, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Word Error Rate (WER)',
+                                color: '#E95420',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                color: '#FFF'
+                            },
+                            grid: {
+                                color: 'rgba(119, 41, 83, 0.3)'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Number of Conversations',
+                                color: '#E95420',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                color: '#FFF'
+                            },
+                            grid: {
+                                color: 'rgba(119, 41, 83, 0.3)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#FFF'
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Count: ${context.raw}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Function to calculate WER statistics for all conversations
+        function calculateWERStats(conversations) {
+            const werValues = [];
+            
+            conversations.forEach(conv => {
+                // Skip if no messages
+                if (!conv.orig_messages || !conv.synthetic_messages || 
+                    conv.orig_messages.length === 0 || conv.synthetic_messages.length === 0) {
+                    return;
+                }
+                
+                // Calculate WER for each pair of messages
+                const minLength = Math.min(conv.orig_messages.length, conv.synthetic_messages.length);
+                for (let i = 0; i < minLength; i++) {
+                    const origText = conv.orig_messages[i].text || '';
+                    const synthText = conv.synthetic_messages[i].text || '';
+                    const wer = calculateWER(origText, synthText);
+                    werValues.push(wer);
+                }
+            });
+            
+            // Calculate statistics
+            const avg = werValues.reduce((sum, val) => sum + val, 0) / werValues.length;
+            const sorted = [...werValues].sort((a, b) => a - b);
+            const median = sorted.length % 2 === 0 
+                ? (sorted[sorted.length/2 - 1] + sorted[sorted.length/2]) / 2
+                : sorted[Math.floor(sorted.length/2)];
+            const min = Math.min(...werValues);
+            const max = Math.max(...werValues);
+            
+            // Calculate standard deviation
+            const variance = werValues.reduce((sum, val) => sum + Math.pow(val - avg, 2), 0) / werValues.length;
+            const std = Math.sqrt(variance);
+            
+            return {
+                values: werValues,
+                avg,
+                median,
+                min,
+                max,
+                std
+            };
         }
         
         // Initialize

@@ -17,3 +17,4 @@ token/
 .DS_Store
 services/inspect/datasets/
 services/inspect/current_dataset.json
+*.pkl
