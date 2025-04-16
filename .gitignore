@@ -17,3 +17,9 @@ token/
 .DS_Store
 services/inspect/datasets/
 services/inspect/current_dataset.json
+
+# Python cache directories
+__pycache__/
+.pytest_cache/
+*.pyo
+*.pyd
