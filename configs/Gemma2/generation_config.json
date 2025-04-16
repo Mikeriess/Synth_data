@@ -1,0 +1,26 @@
+{
+    "generation_config": {
+        "model": "google/gemma-2-27b-it",
+        "temperature": 0.8,
+        "max_tokens": 8192,
+        "total_input_tokens": 8192,
+        "top_p": 0.95,
+        "request_timeout": 500
+    },
+    "api_config": {
+        "vllm_url": "http://0.0.0.0:8000/v1/chat/completions",
+        "headers": {"Content-Type": "application/json"}
+    },
+    "dataset_config": {
+        "source_dataset": "mikeriess/LM_anonymized",
+        "num_conversations": 5000,
+        "username": "mikeriess",
+        "dataset_name": "LM_dialogues_5k_gemma_2_27b_prompt1",  // Single source of truth
+        "push_to_hub": true,
+        "private": true
+    },
+    "files": {
+        "prompt_file": "prompts/Gemma2/prompt1.txt",
+        "base_dir": "experiments"
+    }
+} 

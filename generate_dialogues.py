@@ -170,25 +170,70 @@ def load_config(config_path: str) -> Dict:
     with open(config_path, 'r') as f:
         return json.load(f)
 
-def upload_config_files(dataset_name: str, config_path: str, prompt_path: str):
-    """Upload configuration and prompt files to dataset repository."""
+def get_project_paths(config):
+    """Get all project-related paths from config"""
+    username = config['dataset_config']['username']
+    dataset_name = config['dataset_config']['dataset_name']
+    base_dir = config['files']['base_dir']
+    prompt_file = Path(config['files']['prompt_file'])
+    
+    return {
+        'hf_path': f"{username}/{dataset_name}",
+        'checkpoint_dir': Path(base_dir) / dataset_name,
+        'prompt_file': prompt_file,
+        'prompt_name': prompt_file.name,
+        'config_file': Path('configs/generation_config.json'),
+        'output_dir': Path(base_dir) / dataset_name / 'output'
+    }
+
+def backup_config_files(checkpoint_dir: Path, paths: dict):
+    """
+    Backup configuration and prompt files to checkpoint directory,
+    maintaining original folder structure
+    """
+    # Create directory structure
+    backup_config_dir = checkpoint_dir / 'configs'
+    backup_prompt_dir = checkpoint_dir / 'prompts'
+    backup_config_dir.mkdir(parents=True, exist_ok=True)
+    backup_prompt_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Copy config file maintaining structure
+    config_backup = backup_config_dir / paths['config_file'].name
+    with open(paths['config_file'], 'r') as src, open(config_backup, 'w') as dst:
+        json.dump(json.load(src), dst, indent=2)
+    
+    # Copy prompt file maintaining structure
+    prompt_backup = backup_prompt_dir / paths['prompt_name']
+    with open(paths['prompt_file'], 'r') as src, open(prompt_backup, 'w') as dst:
+        dst.write(src.read())
+    
+    print(f"\nConfiguration backed up to: {backup_config_dir}")
+    print(f"Prompt backed up to: {backup_prompt_dir}")
+
+def upload_config_files(dataset_name: str, paths: dict):
+    """
+    Upload configuration and prompt files to dataset repository,
+    maintaining original folder structure
+    """
     api = HfApi()
     
-    # Upload config file
+    # Upload config file to configs directory
     api.upload_file(
-        path_or_fileobj=config_path,
-        path_in_repo="configs/generation_config.json",
+        path_or_fileobj=str(paths['config_file']),
+        path_in_repo=f"configs/{paths['config_file'].name}",
         repo_id=dataset_name,
         repo_type="dataset"
     )
     
-    # Upload prompt file
+    # Upload prompt file to prompts directory
     api.upload_file(
-        path_or_fileobj=prompt_path,
-        path_in_repo="prompts/dialogue_prompt.txt",
+        path_or_fileobj=str(paths['prompt_file']),
+        path_in_repo=f"prompts/{paths['prompt_name']}",
         repo_id=dataset_name,
         repo_type="dataset"
     )
+    
+    print("\nConfiguration and prompt files uploaded to dataset repository")
 
 def create_and_upload_readme(dataset_name: str, config: dict):
     """Create and upload README.md containing the configuration."""
@@ -217,7 +262,6 @@ def create_and_upload_readme(dataset_name: str, config: dict):
         print(f"\nWarning: Failed to upload README: {str(e)}")
 
 def upload_intermediate_dataset(generated_dataset: dict, config: dict, current_count: int):
-    """Upload intermediate dataset to HuggingFace Hub."""
     try:
         # Create a temporary analysis dataset
         model_name = config['generation_config']['model']
@@ -263,40 +307,26 @@ def upload_intermediate_dataset(generated_dataset: dict, config: dict, current_c
             add_metadata=True
         )
         
-        # Push to HuggingFace Hub using the final dataset name
-        # This will create the dataset if it doesn't exist, or update it if it does
+        paths = get_project_paths(config)
+        
+        # Push to HuggingFace Hub
         hf_dataset.push_to_hub(
-            config['dataset_config']['output_dataset_name'],
+            paths['hf_path'],
             private=config['dataset_config']['private'],
             token=True,
             commit_message=f"Intermediate update - {current_count} conversations"
         )
-        print(f"\nIntermediate dataset ({current_count} conversations) pushed to HuggingFace Hub as: {config['dataset_config']['output_dataset_name']}")
+        print(f"\nIntermediate dataset ({current_count} conversations) pushed to HuggingFace Hub as: {paths['hf_path']}")
         
     except Exception as e:
         print(f"\nWarning: Failed to upload intermediate dataset: {str(e)}")
 
-def save_local_dataset(checkpoint_dir: str, hf_dataset, num_conversations: int):
-    """Save dataset locally in the checkpoint directory."""
-    output_dir = Path(checkpoint_dir) / f'synthetic_conversations_{num_conversations}'
-    # Convert Path to string before saving
+def save_local_dataset(paths: dict, hf_dataset, num_conversations: int):
+    """Save dataset locally in the output directory"""
+    output_dir = paths['output_dir'] / f'synthetic_conversations_{num_conversations}'
+    output_dir.mkdir(parents=True, exist_ok=True)
     hf_dataset.save_to_disk(str(output_dir))
     return output_dir
-
-def backup_config_files(checkpoint_dir: str, config_path: str, prompt_path: str):
-    """Backup configuration and prompt files to checkpoint directory."""
-    config_dir = Path(checkpoint_dir) / "configs"
-    config_dir.mkdir(parents=True, exist_ok=True)
-    
-    # Copy config file
-    config_backup = config_dir / "generation_config.json"
-    with open(config_path, 'r') as src, open(config_backup, 'w') as dst:
-        json.dump(json.load(src), dst, indent=2)
-    
-    # Copy prompt file
-    prompt_backup = config_dir / "dialogue_prompt.txt"
-    with open(prompt_path, 'r') as src, open(prompt_backup, 'w') as dst:
-        dst.write(src.read())
 
 def build_context_with_token_limit(messages: List[Dict], prompt_template: str, max_input_tokens: int) -> tuple:
     """
@@ -429,20 +459,18 @@ def main(config_path: str):
     # Load configuration
     config = load_config(config_path)
     
-    # Get max input tokens from config (with default fallback)
-    max_input_tokens = config.get('generation_config', {}).get('total_input_tokens', 512)
+    # Get all paths
+    paths = get_project_paths(config)
     
     # Setup checkpoint directory structure
-    checkpoint_dir = Path(config['files']['checkpoint_dir'])
+    checkpoint_dir = paths['checkpoint_dir']
     checkpoint_dir.mkdir(parents=True, exist_ok=True)
     
     # Backup config and prompt files
-    backup_config_files(
-        checkpoint_dir,
-        config_path,
-        config['files']['prompt_file']
-    )
-    print(f"\nConfiguration files backed up to: {checkpoint_dir}/configs")
+    backup_config_files(checkpoint_dir, paths)
+    
+    # Load prompt template from original location
+    PROMPT_TEMPLATE = load_prompt_template(str(paths['prompt_file']))
     
     # Load dataset
     dataset = load_dataset(config['dataset_config']['source_dataset'])
@@ -452,9 +480,6 @@ def main(config_path: str):
     # Load checkpoint if exists
     generated_dataset, processed_ids = load_checkpoint(str(checkpoint_dir))
     
-    # Load prompt template
-    PROMPT_TEMPLATE = load_prompt_template(config['files']['prompt_file'])
-
     # Get remaining conversations to process
     remaining_ids = set(conversations.keys()) - processed_ids
     remaining_conversations = {
@@ -489,7 +514,7 @@ def main(config_path: str):
                 context, context_stats = build_context_with_token_limit(
                     messages=messages,
                     prompt_template=PROMPT_TEMPLATE,
-                    max_input_tokens=max_input_tokens
+                    max_input_tokens=config['generation_config']['total_input_tokens']
                 )
                 
                 generated_dialogue = generate_dialogue_from_prompt(
@@ -544,29 +569,20 @@ def main(config_path: str):
     )
 
     # Save final dataset locally in checkpoint directory
-    output_dir = save_local_dataset(
-        str(checkpoint_dir),
-        hf_dataset,
-        len(generated_dataset)
-    )
+    output_dir = save_local_dataset(paths, hf_dataset, len(generated_dataset))
     print(f"\nDataset saved locally to: {output_dir}")
 
     # Push to HuggingFace Hub if requested
     if config['dataset_config']['push_to_hub']:
         hf_dataset.push_to_hub(
-            config['dataset_config']['output_dataset_name'],
+            paths['hf_path'],
             private=config['dataset_config']['private'],
             token=True
         )
-        print(f"\nDataset pushed to HuggingFace Hub as: {config['dataset_config']['output_dataset_name']}")
+        print(f"\nDataset pushed to HuggingFace Hub as: {paths['hf_path']}")
         
-        # Upload config and prompt files from checkpoint directory
-        upload_config_files(
-            config['dataset_config']['output_dataset_name'],
-            str(checkpoint_dir / "configs/generation_config.json"),
-            str(checkpoint_dir / "configs/dialogue_prompt.txt")
-        )
-        print("\nConfiguration and prompt files uploaded to dataset repository")
+        # Upload config and prompt files
+        upload_config_files(paths['hf_path'], paths)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
