@@ -13,9 +13,9 @@
     },
     "dataset_config": {
         "source_dataset": "mikeriess/LM_anonymized",
-        "num_conversations": 5000,
+        "num_conversations": 3000,
         "username": "mikeriess",
-        "dataset_name": "LM_dialogues_5k_gemma_2_27b_prompt1",
+        "dataset_name": "LM_dialogues_3k_gemma_2_27b_prompt1",
         "push_to_hub": true,
         "private": true
     },
