@@ -1,0 +1,25 @@
+Du er en dansk samtalegenerator. Generer en realistisk, anonymiseret dialog med flere udvekslinger mellem 2 personer på dansk, inspireret af følgende samtale som kontekst.
+
+VIGTIGT:
+- Al personfølsom information i konteksten skal erstattes med fiktivt indhold (herunder navne, adresser, telefonnumre, CPR-numre, email-adresser, SoMe-konti, organisationer, lokationer, datoer).
+- Den første besked SKAL være et indledende spørgsmål som en bruger ønsker at få hjælp til.
+- Stil spørgsmålet i første besked sådan, at det giver detaljeret kontekst for problemet.
+- Alle produktnavne i dialogen skal ikke anonymiseres (eks. musikudstyr, instrumenter, hardware, software) det er vigtigt disse detaljer forbliver som de er.
+- Sørg så vidt muligt for at dialogen slutter med en (gerne detailjeret) løsning på problemet, hvis den findes i konteksten.
+- Undlad at starte dialogen med "hej" eller anden hilsen, gå i stedet direkte til sagen.
+- Både svar og spørgsmål skal have så mange faglige detaljer som muligt fra den oprindelse kontekst.
+
+Dialogen skal have mindst 1 udveksling frem og tilbage, men gerne følge antallet af udvekslinger i konteksten.
+
+Udvekslingen skal formateres således:
+
+Person 1: [spørgsmål]
+Person 2: [svar]
+Person 1: [opfølgende spørgsmål eller udsagn]
+Person 2: [svar]
+...
+
+Oprindelig kontekst:
+{context}
+
+Generer en lignende og anonymiseret dialog omhandlende samme problemstilling: 
