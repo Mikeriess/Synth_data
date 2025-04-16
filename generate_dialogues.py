@@ -170,8 +170,14 @@ def load_config(config_path: str) -> Dict:
     with open(config_path, 'r') as f:
         return json.load(f)
 
-def get_project_paths(config):
-    """Get all project-related paths from config"""
+def get_project_paths(config: dict, config_path: str):
+    """
+    Get all project-related paths from config
+    
+    Args:
+        config: The loaded configuration dictionary
+        config_path: The actual path to the config file that was used
+    """
     username = config['dataset_config']['username']
     dataset_name = config['dataset_config']['dataset_name']
     base_dir = config['files']['base_dir']
@@ -182,7 +188,7 @@ def get_project_paths(config):
         'checkpoint_dir': Path(base_dir) / dataset_name,
         'prompt_file': prompt_file,
         'prompt_name': prompt_file.name,
-        'config_file': Path('configs/generation_config.json'),
+        'config_file': Path(config_path),  # Use the actual config path
         'output_dir': Path(base_dir) / dataset_name / 'output'
     }
 
@@ -307,7 +313,7 @@ def upload_intermediate_dataset(generated_dataset: dict, config: dict, current_c
             add_metadata=True
         )
         
-        paths = get_project_paths(config)
+        paths = get_project_paths(config, config_path)
         
         # Push to HuggingFace Hub
         hf_dataset.push_to_hub(
@@ -459,8 +465,8 @@ def main(config_path: str):
     # Load configuration
     config = load_config(config_path)
     
-    # Get all paths
-    paths = get_project_paths(config)
+    # Get all paths - pass the actual config_path
+    paths = get_project_paths(config, config_path)
     
     # Setup checkpoint directory structure
     checkpoint_dir = paths['checkpoint_dir']
