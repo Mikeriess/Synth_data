@@ -15,7 +15,7 @@
         "source_dataset": "mikeriess/LM_anonymized",
         "num_conversations": 5000,
         "username": "mikeriess",
-        "dataset_name": "LM_dialogues_5k_gemma3_27b-it_prompt2",  // Single source of truth
+        "dataset_name": "LM_dialogues_5k_gemma3_27b-it_prompt2",
         "push_to_hub": true,
         "private": true
     },
