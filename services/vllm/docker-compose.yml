@@ -9,7 +9,12 @@ services:
       - "8000:8000"
     environment:
       - HUGGING_FACE_HUB_TOKEN=${HUGGING_FACE_HUB_TOKEN}
-    command: --model ${MODEL:-google/gemma-2-9b-it} --gpu-memory-utilization ${GPU_MEMORY_UTILIZATION:-1.0} --tensor-parallel-size ${TENSOR_PARALLEL_SIZE:-4} --host 0.0.0.0 --port 8000
+    # Install the latest transformers from GitHub and run vLLM with limited max sequence length
+    entrypoint: >
+      /bin/bash -c "
+      pip install git+https://github.com/huggingface/transformers.git &&
+      python -m vllm.entrypoints.openai.api_server --model google/gemma-3-4b-it --gpu-memory-utilization ${GPU_MEMORY_UTILIZATION:-0.9} --tensor-parallel-size 1 --max-model-len 8192 --host 0.0.0.0 --port 8000
+      "
     ipc: host
     ulimits:
       memlock: -1
@@ -19,7 +24,7 @@ services:
         reservations:
           devices:
             - driver: nvidia
-              count: all
+              count: 1
               capabilities: [gpu]
     networks:
       - vllm_network
