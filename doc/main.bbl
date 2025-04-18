@@ -1,0 +1,99 @@
+\begin{thebibliography}{10}
+
+\bibitem{hartmann2023sokmemorizationgeneralpurposelarge}
+Valentin Hartmann, Anshuman Suri, Vincent Bindschaedler, David Evans, Shruti Tople, and Robert West.
+\newblock Sok: Memorization in general-purpose large language models, 2023.
+
+\bibitem{GDPR2016a}
+{European Parliament} and {Council of the European Union}.
+\newblock Regulation ({EU}) 2016/679 of the {European} {Parliament} and of the {Council}.
+
+\bibitem{Francopoulo2020AnonymizationFT}
+Gil Francopoulo and L{\'e}on-Paul Schaub.
+\newblock Anonymization for the gdpr in the context of citizen and customer relationship management and nlp.
+\newblock 2020.
+
+\bibitem{NESH2019}
+{National Committee for Research Ethics in the Social Sciences and the Humanities}.
+\newblock A guide to internet research ethics.
+\newblock Guidelines, The National Committee for Research Ethics in the Social Sciences and the Humanities (NESH), Oslo, Norway, 2019.
+\newblock Second edition published in Norwegian in 2018 and in English May 2019.
+
+\bibitem{franzke2020internet}
+aline~shakti franzke, Anja Bechmann, Michael Zimmer, Charles Ess, and {Association of Internet Researchers}.
+\newblock Internet research: Ethical guidelines 3.0.
+\newblock Guidelines, Association of Internet Researchers, 2020.
+\newblock Published under Creative Commons license.
+
+\bibitem{Lukas2023AnalyzingLO}
+Nils Lukas, A.~Salem, Robert Sim, Shruti Tople, Lukas Wutschitz, and Santiago Zanella-B'eguelin.
+\newblock Analyzing leakage of personally identifiable information in language models.
+\newblock {\em 2023 IEEE Symposium on Security and Privacy (SP)}, pages 346--363, 2023.
+
+\bibitem{Dwork2008}
+Cynthia Dwork.
+\newblock Differential privacy: A survey of results.
+\newblock In Manindra Agrawal, Dingzhu Du, Zhenhua Duan, and Angsheng Li, editors, {\em Theory and Applications of Models of Computation}, pages 1--19, Berlin, Heidelberg, 2008. Springer Berlin Heidelberg.
+
+\bibitem{pmlr-v162-kandpal22a}
+Nikhil Kandpal, Eric Wallace, and Colin Raffel.
+\newblock Deduplicating training data mitigates privacy risks in language models.
+\newblock In Kamalika Chaudhuri, Stefanie Jegelka, Le~Song, Csaba Szepesvari, Gang Niu, and Sivan Sabato, editors, {\em Proceedings of the 39th International Conference on Machine Learning}, volume 162 of {\em Proceedings of Machine Learning Research}, pages 10697--10707. PMLR, 17--23 Jul 2022.
+
+\bibitem{staab2024memorizationviolatingprivacyinference}
+Robin Staab, Mark Vero, Mislav Balunović, and Martin Vechev.
+\newblock Beyond memorization: Violating privacy via inference with large language models, 2024.
+
+\bibitem{microsoft_presidio}
+{Microsoft}.
+\newblock Presidio, 2024.
+\newblock Accessed on July 30, 2024.
+
+\bibitem{lison-etal-2021-anonymisation}
+Pierre Lison, Ildik{\'o} Pil{\'a}n, David Sanchez, Montserrat Batet, and Lilja {\O}vrelid.
+\newblock Anonymisation models for text data: State of the art, challenges and future directions.
+\newblock In Chengqing Zong, Fei Xia, Wenjie Li, and Roberto Navigli, editors, {\em Proceedings of the 59th Annual Meeting of the Association for Computational Linguistics and the 11th International Joint Conference on Natural Language Processing (Volume 1: Long Papers)}, pages 4188--4203, Online, August 2021. Association for Computational Linguistics.
+
+\bibitem{enevoldsen2021dacy}
+Kenneth Enevoldsen, Lasse Hansen, and Kristoffer Nielbo.
+\newblock Dacy: A unified framework for danish nlp.
+\newblock {\em arXiv preprint arXiv:2107.05295}, 2021.
+
+\bibitem{enevoldsen2024danskdacy260domain}
+Kenneth Enevoldsen, Emil~Trenckner Jessen, and Rebekah Baglini.
+\newblock Dansk and dacy 2.6.0: Domain generalization of danish named entity recognition, 2024.
+
+\bibitem{saattrupdan2024scandiNER}
+Dan~Saattrup Nielsen.
+\newblock {ScandiNER: Named Entity Recognition model for Scandinavian Languages}.
+\newblock \url{https://huggingface.co/saattrupdan/nbailab-base-ner-scandi}, 2024.
+\newblock Accessed: July 29, 2024.
+
+\bibitem{yermilov2023privacy}
+Oleksandr Yermilov, Vipul Raheja, and Artem Chernodub.
+\newblock Privacy- and utility-preserving nlp with anonymized data: A case study of pseudonymization, 2023.
+
+\bibitem{Enevoldsen2024}
+Kenneth Enevoldsen.
+\newblock Augmenty: A python library for structured text augmentation.
+\newblock {\em Journal of Open Source Software}, 9(96):6370, 2024.
+
+\bibitem{lu2024machinelearningsyntheticdata}
+Yingzhou Lu, Minjie Shen, Huazheng Wang, Xiao Wang, Capucine van Rechem, Tianfan Fu, and Wenqi Wei.
+\newblock Machine learning for synthetic data generation: A review, 2024.
+
+\bibitem{brown2020languagemodelsfewshotlearners}
+Tom~B. Brown, Benjamin Mann, Nick Ryder, Melanie Subbiah, Jared Kaplan, Prafulla Dhariwal, Arvind Neelakantan, Pranav Shyam, Girish Sastry, Amanda Askell, Sandhini Agarwal, Ariel Herbert-Voss, Gretchen Krueger, Tom Henighan, Rewon Child, Aditya Ramesh, Daniel~M. Ziegler, Jeffrey Wu, Clemens Winter, Christopher Hesse, Mark Chen, Eric Sigler, Mateusz Litwin, Scott Gray, Benjamin Chess, Jack Clark, Christopher Berner, Sam McCandlish, Alec Radford, Ilya Sutskever, and Dario Amodei.
+\newblock Language models are few-shot learners, 2020.
+
+\bibitem{cc_by_nc_sa_40}
+{Creative Commons}.
+\newblock Attribution-{NonCommercial}-{ShareAlike} 4.0 {International} ({CC} {BY}-{NC}-{SA} 4.0), 2013.
+\newblock Accessed: 01/08/2024.
+
+\bibitem{dacy}
+Kenneth Enevoldsen, Lasse Hansen, and Kristoffer~L. Nielbo.
+\newblock {{DaCy}}: {{A}} unified framework for danish {{NLP}}.
+\newblock In {\em Ceur Workshop Proceedings}, volume 2989 of {\em {{CEUR Workshop Proceedings}}}, pages 206--216. {ceur workshop proceedings}.
+
+\end{thebibliography}

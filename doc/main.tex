@@ -1,0 +1,288 @@
+\documentclass{article}
+
+\usepackage{arxiv}
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage{hyperref}       % hyperlinks
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+\usepackage{svg}
+\usepackage{graphicx}
+%\usepackage{doi}
+%\usepackage{natbib}
+\usepackage[numbers,sort&compress]{natbib}
+\graphicspath{ {./images/} }
+
+
+\title{LM-INSTRUCT: A case study on Domain-specific Synthetic Instruction Dataset generation in Danish}
+
+
+\author{
+ Mike Riess \\
+  Research \& Innovation\\
+  Telenor Group\\
+  Oslo, Norway \\
+  \texttt{email@email.com} \\
+   \And
+   Kenneth Enevoldsen\\
+   Center for Humanities Computing\\
+   Aarhus University\\
+   Aarhus, Denmark \\
+  \texttt{email@email.com} \\
+}
+
+\begin{document}
+\maketitle
+\begin{abstract}
+
+\end{abstract}
+
+
+% keywords can be removed
+%\keywords{First keyword \and Second keyword \and More}
+
+
+\section{Introduction}
+Online forums has been a vital space for collaboration and knowledge exchange ever since the introduction of the internet. These platforms serve as an important medium, especially for communities within music production and sound engineering, enabling users to discuss complex topics in-depth and connect with peers. The Danish forum Lydmaskinen.dk is one such platform, consisting of almost 11k users and a total of 644k topics started (as per August 2024). 
+
+These platforms contain a vast amount of specialized knowledge in written form, which makes it of particular interest in the research and development of Large Language Models (LLM) in Danish. Fine-tuning or evaluating LLMs on this data source could be useful for research on language capabilities in Danish or skill learning (domain knowledge) beyond the Danish language itself.
+
+However, a potential problem in this context is the accidental sharing of information that can be regarded as personal (Full names, addresses, phone numbers, e-mails etc.,). As LLMs are known to memorize sequences from their training data \cite{hartmann2023sokmemorizationgeneralpurposelarge}, person-identifiable information can become artifacts of future LLMs trained on the information from Lydmaskinen, if not carefully filtered and anonymized. 
+
+In this study we analyze the Legal, Ethical and Technical aspects of releasing user-generated content for AI Research, while proposing a methodology that respects these. Finally, we present LM-INSTRUCT, a dataset of dialogues in Danish within professional music production, sound engineering (live and studio), music theory, acoustics and video production.
+
+
+\subsection{Research questions}
+To guide the work of generating the LM-INSTRUCT dataset, two research questions are proposed:
+    \begin{itemize}
+        \item \textbf{G1 Subset refinement:} Transforming the Lydmaskinen.dk database into a instruction dataset that is legally, technically and ethically sound for use in future research.
+        \item \textbf{G2 Validation:} Comparing the performance of the generated instruction dataset to the original dataset.
+    \end{itemize}
+
+To address G1, a literature review of relevant work and legislation in this area is surveyed in section\ref*{Relatedwork}, while a set of resulting requirements and alternatives for the publication of the data is listed in section \ref*{requirements}. The chosen approach for the processing and release of LM-INSTRUCT is presented in detail in section \ref*{methodology}. 
+
+To validate the approach, a comparison of the performance of the generated instruction dataset to the original dataset will be performed by fine-tuning a LLM on both the original and generated dataset. The results will be presented in section \ref*{results}.
+
+\section{Literature review}\label{Relatedwork}
+To provide a structured overview, this section is divided into three subsections: Legal (\ref*{legal}), technical (\ref*{technical}) and ethical (\ref*{ethical}) aspects.
+
+
+\subsection{Legal aspects}\label{legal}
+%The legal landscape surrounding the use and sharing of user-generated content such as the data from Lydmaskinen, particularly in the context of large language models (LLMs) and data privacy, is complex (and still evolving). This section outlines some key aspects that is found to be relevant to LM-INSTRUCT.
+
+
+\subsubsection{GDPR Compliance}
+The General Data Protection Regulation (GDPR) \citep{GDPR2016a} is a comprehensive framework for data protection in the European Union. Key aspects of GDPR relevant to the release of LM-INSTRUCT is discussed in the following.
+
+
+\paragraph{Consent and Transparency:} The GDPR mandates obtaining informed consent before collecting, processing, or sharing personal data which might occur in the user-generated content at Lydmaskinen. This requirement emphasizes the need for clear communication with users about how their data will be used. When creating a profile on Lymaskinen.dk, the user is faced with Terms Of Service (TOS) that gives the forum the rights to use their data and re-distribute it to third parties. As of 31/07/2024, the last section of the TOS says the following:
+
+\begin{quote}
+    ``Ved at indsende skriftligt indhold til "Lydmaskinen", beholder du alle ejerskabsrettigheder til dit indhold. Dog giver du "Lydmaskinen" en ikke-eksklusiv, royalty-fri, vedvarende, verdensomspændende licens til at bruge, reproducere, ændre, tilpasse, udgive, oversætte, distribuere og vise sådant skriftligt indhold i ethvert medie eller format. "Lydmaskinen" forbeholder sig retten til at ændre disse betingelser til enhver tid. Ændringer vil blive offentliggjort på denne side, og din fortsatte brug af forummet udgør accept af disse ændringer. Hverken "Lydmaskinen" eller phpBB blive holdt ansvarlig for ethvert hackingforsøg, som kan medføre at dataene bliver kompromitteret''
+\end{quote}
+
+While this definition gives Lydmaskinen the right to distribute the user-generated content to third parties, article 5(1)(d) of the GDPR specifically requires that personal data shall be:
+
+\begin{quote}
+    ``collected for specified, explicit and legitimate purposes and not further processed in a manner that is incompatible with those purposes; further processing for archiving purposes in the public interest, scientific or historical research purposes or statistical purposes shall, in accordance with Article 89(1), not be considered to be incompatible with the initial purposes (‘purpose limitation’);''
+\end{quote}
+
+As the intended use of this data is research, Article 89(1) could apply, which specifies that safeguards such as pseudonymization and data minimization needs to be put in place to protect individuals. In the cases that the data does not fall under this category, all the uses of the released data needs to be specified beforehand in the TOS at Lydmaskinen. This presents some practical limitations, as this cannot be known or controlled by Lydmaskinen once the data has been released.
+
+
+\paragraph{Data Minimization and Purpose Limitation:} Article 4(5) of the GDPR \citep{GDPR2016a} stipulates that data collection should be limited to what is essential for the specified purpose. This principle is exemplified in the case study by \citet{Francopoulo2020AnonymizationFT}, which demonstrates practical applications of data minimization in compliance with GDPR.
+
+\paragraph{Anonymization and Data Protection:} The GDPR defines pseudonymization as:
+
+\begin{quote}
+``the processing of personal data in such a manner that the personal data can no longer be attributed to a specific data subject without the use of additional information, provided that such additional information is kept separately and is subject to technical and organisational measures to ensure that the personal data are not attributed to an identified or identifiable natural person.'' \citep{GDPR2016a}
+\end{quote}
+
+This definition presents challenges in the case where a third party has access to the additional information that can be used to identify the individial. For Lydmaskinen this is a problem, as the raw data still exists without pseudonyms on the forum website. Technically, the data therefore cannot be effecetively pseudonymized if its source (at the forum website) remains unchanged.
+
+\subsection{Ethical aspects}\label{ethical}
+
+\paragraph{Responsibility to inform and obtain consent} The technical report from the National Committee for Research Ethics in the Social Sciences and the Humanities (NESH) \cite{NESH2019}, as well as the Ethics Guidelines from the Association of Internet Researchers (AoIR) \cite{franzke2020internet} stress the importance of informed consent from the research subjects and to take extra precautions to protect participants' privacy and confidentiality. The NESH report states the following:
+\begin{quote}
+    ``In other words, this does not refer to the statutory requirement for consent to the processing of special categories of personal data or the statutory entitlement to information and transparency (NESH 2016: B.8), but to the ethical responsibility that invariably rests with the researcher, irrespective of whether personal data are involved or not, or whether the information is sensitive or not. Variations in the nature of the research, its source material and source data may give rise to different questions and dilemmas concerning research ethics.'' \citep{NESH2019}
+\end{quote}
+
+\paragraph{Transparency in research methods and data usage} The AoIR guidelines \cite{franzke2020internet} stress the importance of transparency in research methods and data usage, as well as respecting online communities and maintaining data integrity. Researchers are advised to document their ethical decision-making processes and adhere to relevant laws and platform terms of service. The guidelines stress that researchers should provide clear and detailed explanations of their data collection, processing, and presentation methods. This includes explicitly describing data cleaning processes and any adjustments made to the dataset, as these can significantly influence research outcomes.
+
+
+\subsection{Techical aspects}\label{technical}
+
+
+\subsubsection{LLM Memorization and Privacy Risks}
+Recent studies have shown that that LLMs are likely to memorize and thereby reproduce complete sequences of text, which might present a privacy risk, depending on data used. 
+
+\paragraph{Membership inference and reconstruction attacks:} The study of \cite{Lukas2023AnalyzingLO} explore sentence-level membership inference (inferring whether a model was trained on a particular piece of text) and reconstruction attacks (extracting complete sentences or larger portions of text that were used to train the model) and find that even though differential privacy (a method that reduces memorization during training, see \cite{Dwork2008}) reduces the leakage of person-identifiable information (PII), this still leaks about 3\% of PII-sentences. Other attacks such as adversarial inference aim to indentify key entities in text and thereby identify demographical information that can be person-identifiable. The authors of \cite{hartmann2023sokmemorizationgeneralpurposelarge} divide the memorization aspect of LLMs into six different types, and propose a balanced view by highlighting both the positive and negative aspects of each of these capabilties. Based on their analysis, the privacy and security aspects of memorization are exclusively negative (leaking sensitive data, author attribution, etc.), whereas these can have positive implications for the sake of auditing (watermarking, bias detection etc.) or model alignment (capability to quoute, question answering etc.). 
+
+\paragraph{Inference attacks beyond memorization:} As multiple entries of the same sequences have been known to increase the risk of memorization, \cite{pmlr-v162-kandpal22a} propose to deduplicate text sequences in the training data to reduce the risk of memorization. However, the study of \cite{staab2024memorizationviolatingprivacyinference} finds that simple prompting techniques using state-of-the-art LLMs (GPT-4, Claude-2, Llama-2) can generate accurate information on indiviudals. Specifically, accuracy on real world data at top-1 and top-3 level classification were as high as 85\% and 95\%, respectively. To be clear, this method did not memorize data, but were able to predict person-identifiable attributes accurately based on text written by the subjects. Based on these findings, the authors thereby advocate for a broader discussion on LLM privacy implications (beyond mitigation of text memorization). 
+
+
+\subsubsection{Data Anonymization}
+
+%\paragraph{Common approaches to text anonymization:} An overview of common approaches and problems in text anonymization is found in \cite{lison-etal-2021-anonymisation}. 
+
+%\begin{itemize}
+%    \item Heuristic: Regex, Token Replacement
+    %\item NER: DaCy NER \cite{enevoldsen2021dacy} and Scandi-ner \cite{saattrupdan2024scandiNER}
+    %\item Pseudonymization \cite{yermilov2023privacy}, Augmenty \cite{Enevoldsen2024}
+    %\item Synthetic Data Generation: \cite{lu2024machinelearningsyntheticdata} %https://arxiv.org/abs/2302.04062
+%\end{itemize}
+
+
+\paragraph{Heuristic pattern-matching:} At the lowest level of sofistication is the simple pattern matching and replacement techniques using e.g., Regex syntax. Examples can be to remove emails, credit card numbers, urls and so forth. These techniques can not stand alone, as they do not specifically target PII, but rather character-level patterns \cite{microsoft_presidio}.
+
+\paragraph{De-identification:} This technique is defined as a sequence-labelling task using methods such as Named-Entity Recognition (NER) to identify and replace PII with general (sanitized) tokens \cite{lison-etal-2021-anonymisation}. Models such as DaCy NER \cite{enevoldsen2021dacy,enevoldsen2024danskdacy260domain} and ScandiNER \cite{saattrupdan2024scandiNER} are both options that require no fine-tuning or adaptation for use on text in Danish.
+
+\paragraph{Pseudonymization:} Using methods such as NER or LLMs to pseudonymize text to preserve some degree of its original context and meaning while still anonymizing PII \cite{yermilov2023privacy}. One example for Danish text is the Python library Augmenty \cite{Enevoldsen2024}, which replaces entities with pseudonyms.  
+
+
+
+\paragraph{Synthetic data generation:} Another option to data anonymization is to generate synthetic instances based on the distribution of real data \cite{lu2024machinelearningsyntheticdata}. This approach presents a promising alternative to sharing of real user-generated data. Synthetic text data can be generated by pre-training a language model on sequences from the real data distribution using self-supervised learning \cite{brown2020languagemodelsfewshotlearners} (training from unlabeled data by masking and learning to predict the correct token). Inherently, this method does however also suffer from the same memorization risks discussed above, as the simulator is a decoder language model.
+\begin{itemize}
+    \item \textbf{In-Context Learning:} Using an existing decoder model to generate synthetic data by providing a prompt and one or more examples.
+\end{itemize}
+
+
+
+
+%\section{LM\_INSTRUCT}
+\section{Requirements and alternatives}\label{requirements}
+Releasing a vast amount of user-generated content for use in research and development of Large Language Models is no trivial matter. Based on the literature review above, challenges within legal, ethical and technical domains have been identified and converted into requirements for the final dataset to be released as LM-INSTRUCT. The requirements are as follows:
+
+\begin{itemize}
+    \item \textbf{(R1) Legal compliance:} Ensuring that relevant regulations such as the General Data Protection Regulation of the European Union is followed.
+    \item \textbf{(R2) Ethical research standards:} Following the NESH and AoIR guidelines for ethical research.
+    \item \textbf{(R3) Anonymization:} Ensuring that the amount of PII is minimized, to ensure this will not carry on to future models fine-tuned on LM-INSTRUCT.
+\end{itemize}
+
+
+To satisfy R1 and R2, the users included in the dataset must have given consent to the use of the data for the purpose of AI Research. Furthermore, PII must be removed from the data to satisfy all three requirements. Based on the known methods for data processing, three different alternatives have been identified. 
+
+\begin{itemize}
+    %\item \textbf{Anonymization only:} Removing PII to the extent possible, informing about the release of the data without asking the users for consent beforehand.
+    \item \textbf{(A1) Consent + Anonymization:} Asking users for consent (opt-in), while pseudonymizing or de-identifying any personal information at both Lydmaskinen and in the resulting LM-INSTRUCT data.
+    %Removing PII to the extent possible, asking users for consent (opt-in), releasing the subset of the data from users who has given consent.
+
+    \item \textbf{(A2) Synthetic questions and answers:} Pseudonymizing or de-identifying any personal information, while using the anonymized dataset to generate a synthetic version of the data to be released as LM-INSTRUCT.
+    \begin{itemize}
+        \item \url{https://arxiv.org/pdf/2403.13787}
+        %\item \url{https://developer.nvidia.com/blog/leverage-our-latest-open-models-for-synthetic-data-generation-with-nvidia-nemotron-4-340b/}
+    \end{itemize}
+    
+    \item \textbf{(A3) Anonymization at source and target:} Pseudonymizing or de-identifying any personal information at both Lydmaskinen and in the LM-INSTRUCT data, while informing the users about the publication of the data.
+\end{itemize}
+
+The first alternative, \textbf{A1}, preserves data quality as much as possible, while also minimizing the risks of future LLMs memorizing PII. In this case, users are asked directly to opt-in, which is assumed to lead to a significant reduction in the number of documents. Further, it assumes that any personal information present on Lydmaskinen is pseudonymized as well (to satisfy the pseudonymization definition in GDPR\citep{GDPR2016a}). Finally, the data should be licensed under a CC BY-NC-SA 4.0 license \cite{cc_by_nc_sa_40}, allowing for research-only use of the data.
+
+The second alternative, \textbf{A2}, generates data that is similar in nature to the real data, without any limits in the number of documents, however, the quality of this synthetic data depends highly on the text generating capabilities of the LLM used. Using this approach, it is vital that the produced dataset is validated.
+
+The third alternative, \textbf{A3}, assumes that the consent given at the forum is sufficient under GDPR, but that pseudonymization is still needed (at both Lydmaskinen and in LM-INSTRUCT) in addition to informing the users at Lydmaskinen. A general problem with this approach is that it is not clear how many users that would consent to the release of their data, and therefore the size of the dataset is unknown. Users that are no longer active on the forum will thereby be excluded, as they cannot be asked for consent.
+
+Weighing the pros and cons of each alternative, \textbf{A2} is chosen as the best compromise between data quality, privacy and ethical concerns.
+
+\section{Methodology}\label{methodology}
+
+
+\subsection{Data retrieval}
+The dataset was extracted from a phpBB MySQL database and follows the default structure of the \textit{phpBB3} open source forum software. The retrieval and preprocessing process consisted of the following steps:
+
+\begin{enumerate}
+    \item \textbf{Data Loading}: Load preprocessed forum data from pickle files containing:
+    \begin{itemize}
+        \item Forums data (forum\_id, forum\_name, etc.)
+        \item Topics data (topic\_id, topic\_title, topic\_poster, forum\_id, etc.)
+        \item Posts data (post\_id, post\_text, post\_time, poster\_id, etc.)
+    \end{itemize}
+    
+    \item \textbf{Forum Selection}: Filter data to include only specific forums of interest (default: forum IDs 1 and 2).
+    
+    \item \textbf{Topic Sampling}: Sample a specified number of topics (default: 30,000) from the selected forums using a fixed random seed (42) for reproducibility.
+    
+    \item \textbf{Post Collection}: Retrieve all posts associated with the sampled topics.
+    
+    \item \textbf{Data Merging}: Combine forum, topic, and post information into a unified dataset that preserves the hierarchical structure:
+    \begin{itemize}
+        \item Link topics to their parent forums
+        \item Link posts to their parent topics
+        \item Sort by forum ID, topic ID, and post time to maintain conversation flow
+    \end{itemize}
+    
+    \item \textbf{Text Cleaning}: Process text fields by unescaping HTML entities in forum names.
+    
+    \item \textbf{Conversation Structuring}: Add post numbering within each topic and assign conversation IDs to facilitate further processing.
+\end{enumerate}
+
+This preprocessing pipeline transforms the raw database export into a structured dataset suitable for the anonymization process described in Section~\ref{sec:Data_replacement}. The resulting dataset preserves the conversational nature of the forum discussions while organizing the data in a format optimized for language model training.
+
+
+
+\subsection{Data Filtering and Replacement}\label{sec:Data_replacement}
+
+We developed a comprehensive anonymization pipeline to process forum conversations while preserving domain-specific terminology and structure. Our initial anonymization procedure follows these steps:
+
+\begin{enumerate}
+    \item \textbf{Data Organization}: Convert raw data into a structured conversation format, preserving metadata like forum name, topic title, and post relationships.
+    
+    \item \textbf{Text Normalization}: Clean and standardize text by:
+    \begin{itemize}
+        \item Removing BBCode quotes (e.g., [quote="USERNAME"]...[/quote])
+        \item Stripping excessive whitespace
+        \item Removing HTML tags
+        \item Normalizing quotes, apostrophes, and dashes
+    \end{itemize}
+    
+    \item \textbf{NER-based Anonymization}: Apply Danish-specific named entity recognition using daCy\cite{dacy} large transformer model (da\_dacy\_large\_trf-0.2.0) to identify and replace:
+    \begin{itemize}
+        \item Person names (PER) → [PERSON]
+        \item Locations (LOC) → [LOCATION]
+        \item Dates (DATE) → [DATE]
+        \item Nationalities, religious or political groups (NORP) → [GROUP]
+    \end{itemize}
+    
+    \item \textbf{Signature Detection}: Identify common signature patterns in Danish forum posts and replace them with [PERSON] tags:
+    \begin{itemize}
+        \item Slash signatures (e.g., "/Michael")
+        \item Danish closing formulas (e.g., "Mvh. Michael", "Venlig hilsen Michael")
+        \item English closing formulas (e.g., "Regards Michael")
+        \item Other common signature patterns (e.g., "Kh. Michael", "Vh. Michael")
+    \end{itemize}
+    
+    \item \textbf{Pattern-based Anonymization}: Apply regex patterns to detect and replace structured personal information:
+    \begin{itemize}
+        \item Email addresses → [EMAIL]
+        \item Phone numbers → [PHONE]
+        \item URLs → [URL]
+        \item IP addresses → [IP\_ADDRESS]
+        \item Social security numbers → [SSN]
+        \item Credit card numbers → [CREDIT\_CARD]
+        \item Physical addresses → [ADDRESS]
+        \item ZIP codes → [ZIPCODE]
+    \end{itemize}
+    
+    \item \textbf{Username Anonymization}: Replace known usernames from a curated list (data/usernames.txt) with [PERSON] tags to prevent identification of forum participants.
+    
+    \item \textbf{Token Counting}: Calculate token statistics for the original, normalized, and anonymized text to track the impact of anonymization on token counts.
+    
+    \item \textbf{Dataset Preparation}: Format the anonymized conversations for language model training, preserving conversation structure and relevant metadata.
+\end{enumerate}
+
+This pipeline aims to transform the raw data into a format that is anonymized to the extent possible, which will then be used as source input for the generation of synthetic instruction data.
+
+\section{Results}\label{results}
+
+\section{Discussion}
+
+\section{Conclusion}
+
+
+\bibliographystyle{unsrt}  
+\bibliography{references}
+
+\end{document}
